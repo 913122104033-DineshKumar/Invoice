@@ -1,67 +1,94 @@
 package invoice;
 
+import java.util.Scanner;
+
 public class Customer {
     // Primary Details
-    private static int cusNo = 1;
-    private Utils.CustomerTypes customerType;
-    private String firstName;
-    private String lastName;
-    private String salutation;
+    private static int totalCustomers = 0;
+    private final int cusNo;
+    private final Utils.CustomerTypes customerType;
+    private final String name;
     private String companyName;
     private String email;
     private String phone;
 
     // Office Address
-    private String country;
-    private String state;
-    private String city;
-    private String street;
-    private String pinCode;
+    private Address address;
 
     // Shipping Address
-    private String shippingCountry;
-    private String shippingState;
-    private String shippingCity;
-    private String shippingStreet;
-    private String shippingPinCode;
+    private Address shippingAddress;
 
-    // Create a customer with Type and firstName.
-    public Customer (Utils.CustomerTypes customerType, String firstName, String lastName, String salutation, String companyName, String email, String phone, String country, String state, String city, String street, String pinCode, String shippingCountry, String shippingState, String shippingCity, String shippingStreet, String shippingPinCode) {
+    public Customer (Utils.CustomerTypes customerType, String name) {
         this.customerType = customerType;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.salutation = salutation;
-        this.companyName = companyName;
-        this.email = email;
-        this.phone = phone;
-        this.country = country;
-        this.state = state;
-        this.city = city;
-        this.street = street;
-        this.pinCode = pinCode;
-        this.shippingCountry = shippingCountry;
-        this.shippingState = shippingState;
-        this.shippingCity = shippingCity;
-        this.shippingStreet = shippingStreet;
-        this.shippingPinCode = shippingPinCode;
-        cusNo++;
+        this.name = name;
+        totalCustomers++;
+        this.cusNo = totalCustomers;
     }
 
-    // For other uses, call this setter and getter for simplified Constructor.
-    public void setCustomerType (Utils.CustomerTypes customerType) {
-        this.customerType = customerType;
-    }
-
-    public void setFirstName (String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setSalutation (String salutation) {
-        this.salutation = salutation;
-    }
-
-    public void setLastName (String lastName) {
-        this.lastName = lastName;
+    public static Customer createCustomer () {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the Name: ");
+        String name = scanner.nextLine();
+        Utils.CustomerTypes customerType;
+        String companyName = "";
+        System.out.println("Individual -> 0, Business -> 1");
+        int customerTypeOption = scanner.nextInt();
+        scanner.nextLine();
+        if (customerTypeOption == 0) {
+            customerType = Utils.CustomerTypes.INDIVIDUAL;
+        } else {
+            customerType = Utils.CustomerTypes.BUSINESS;
+            System.out.println("Enter the Company Name: ");
+            companyName = scanner.nextLine();
+        }
+        Customer customer = new Customer(customerType, name);
+        if (!companyName.isEmpty()) {
+            customer.setCompanyName(companyName);
+        }
+        String email = "";
+        while (email.isBlank()) {
+            System.out.println("Enter the Email Address: ");
+            email = scanner.nextLine();
+        }
+        customer.setEmail(email);
+        String phone = "";
+        while (phone.isEmpty()) {
+            System.out.println("Enter the Phone Number: ");
+            phone = scanner.nextLine();
+        }
+        customer.setPhone(phone);
+        System.out.println("Enter the Country: ");
+        String country = scanner.nextLine();
+        System.out.println("Enter the State: ");
+        String state = scanner.nextLine();
+        System.out.println("Enter the City: ");
+        String city = scanner.nextLine();
+        System.out.println("Enter the Street: ");
+        String street = scanner.nextLine();
+        System.out.println("Enter the Pin Code: ");
+        String pinCode = scanner.nextLine();
+        Address address = new Address(country, state, city, street, pinCode);
+        System.out.println("Address for shipping, Same -> 0, Different -> 1 ");
+        customer.setAddress(address);
+        int addressOption = scanner.nextInt();
+        scanner.nextLine();
+        if (addressOption == 0) {
+            customer.setShippingAddress(address);
+        } else {
+            System.out.println("Enter the Shipping Country: ");
+            String shippingCountry = scanner.nextLine();
+            System.out.println("Enter the Shipping State: ");
+            String shippingState = scanner.nextLine();
+            System.out.println("Enter the Shipping City: ");
+            String shippingCity = scanner.nextLine();
+            System.out.println("Enter the Shipping Street: ");
+            String shippingStreet = scanner.nextLine();
+            System.out.println("Enter the Shipping Pin Code: ");
+            String shippingPinCode = scanner.nextLine();
+            Address shippingAddress = new Address(shippingCountry,shippingState, shippingCity, shippingStreet, shippingPinCode);
+            customer.setShippingAddress(shippingAddress);
+        }
+        return customer;
     }
 
     public void setCompanyName (String companyName) {
@@ -76,47 +103,15 @@ public class Customer {
         this.phone = phone;
     }
 
-    public void setCountry (String country) {
-        this.country = country;
+    public void setAddress (Address address) {
+        this.address = address;
     }
 
-    public void setState (String state) {
-        this.state = state;
+    public void setShippingAddress (Address address) {
+        this.shippingAddress = address;
     }
 
-    public void setCity (String city) {
-        this.city = city;
-    }
-
-    public void setStreet (String street) {
-        this.street = street;
-    }
-
-    public void setPinCode (String pinCode) {
-        this.pinCode = pinCode;
-    }
-
-    public void setShippingCountry (String shippingCountry) {
-        this.shippingCountry = shippingCountry;
-    }
-
-    public void setShippingState (String shippingState) {
-        this.shippingState = shippingState;
-    }
-
-    public void setShippingCity (String shippingCity) {
-        this.shippingCity = shippingCity;
-    }
-
-    public void setShippingStreet (String shippingStreet) {
-        this.shippingStreet = shippingStreet;
-    }
-
-    public void setShippingPinCode (String shippingPinCode) {
-        this.shippingPinCode = shippingPinCode;
-    }
-
-    public static int getCusNo() {
+    public int getCusNo() {
         return cusNo;
     }
 
@@ -124,16 +119,8 @@ public class Customer {
         return customerType;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getSalutation() {
-        return salutation;
+    public String getName() {
+        return name;
     }
 
     public String getCompanyName() {
@@ -148,43 +135,46 @@ public class Customer {
         return phone;
     }
 
-    public String getCountry() {
-        return country;
+    public Address getAddress () { return address; }
+
+    public Address getShippingAddress () { return shippingAddress; }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Customer Details:\n");
+        sb.append("================\n");
+        sb.append("Customer Number: ").append(cusNo).append("\n");
+        sb.append("Name: ").append(name).append("\n");
+        sb.append("Customer Type: ").append(customerType).append("\n");
+
+        if (companyName != null && !companyName.trim().isEmpty()) {
+            sb.append("Company: ").append(companyName).append("\n");
+        }
+
+        sb.append("Email: ").append(email != null ? email : "Not provided").append("\n");
+        sb.append("Phone: ").append(phone != null ? phone : "Not provided").append("\n");
+
+        // Office Address
+        sb.append("\nOffice Address:\n");
+        if (address != null) {
+            sb.append(address.toString()).append("\n");
+        } else {
+            sb.append("Not provided\n");
+        }
+
+        // Shipping Address
+        sb.append("\nShipping Address:\n");
+        if (shippingAddress != null) {
+            sb.append(shippingAddress.toString()).append("\n");
+        } else {
+            sb.append("Not provided\n");
+        }
+
+        sb.append("\nTotal Customers: ").append(totalCustomers);
+
+        return sb.toString();
     }
 
-    public String getState() {
-        return state;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public String getStreet() {
-        return street;
-    }
-
-    public String getPinCode() {
-        return pinCode;
-    }
-
-    public String getShippingCountry() {
-        return shippingCountry;
-    }
-
-    public String getShippingState() {
-        return shippingState;
-    }
-
-    public String getShippingCity() {
-        return shippingCity;
-    }
-
-    public String getShippingStreet() {
-        return shippingStreet;
-    }
-
-    public String getShippingPinCode() {
-        return shippingPinCode;
-    }
 }

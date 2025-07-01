@@ -1,7 +1,11 @@
 package invoice;
 
+import java.util.Scanner;
+
 public class Item {
+    private static int totalItems = 0;
     // Primary Details
+    private final int itemNo;
     private Utils.ItemTypes itemType;
     private String itemName;
     private boolean isTaxable;
@@ -20,6 +24,54 @@ public class Item {
         this.description = description;
         this.intraTaxRate = intraTaxRate;
         this.interTaxRate = interTaxRate;
+        totalItems++;
+        this.itemNo = totalItems;
+    }
+
+    public static Item createItem () {
+        Scanner scanner = new Scanner(System.in);
+        Utils.ItemTypes itemType;
+        double price;
+        String itemName = "";
+        boolean isTaxable = false;
+        String description = "";
+        int intraTaxRate = 0;
+        int interTaxRate = 0;
+        System.out.println("Item Type: Goods -> 0, Service -> 1");
+        int itemTypeOption = scanner.nextInt();
+        scanner.nextLine();
+        if (itemTypeOption == 0) {
+            itemType = Utils.ItemTypes.GOODS;
+        } else {
+            itemType = Utils.ItemTypes.SERVICES;
+        }
+        while (itemName.isEmpty()) {
+            System.out.println("Enter the Item Name: ");
+            itemName = scanner.nextLine();
+        }
+        System.out.println("Is tax applied for this item, if Yes -> 0, No -> 1");
+        int taxableOption = scanner.nextInt();
+        scanner.nextLine();
+        if (taxableOption == 0) {
+            isTaxable = true;
+            System.out.println("Enter the Intra State tax: ");
+            intraTaxRate = scanner.nextInt();
+            scanner.nextLine();
+            System.out.println("Enter the Inter State tax: ");
+            interTaxRate = scanner.nextInt();
+            scanner.nextLine();
+        }
+        System.out.println("Enter the Selling price of the item: ");
+        price = scanner.nextDouble();
+        scanner.nextLine();
+        System.out.println("Would you like to enter the description for the item, if yes -> 0, No -> 1");
+        int descriptionOption = scanner.nextInt();
+        scanner.nextLine();
+        if (descriptionOption == 0) {
+            System.out.println("Enter the description: ");
+            description = scanner.nextLine();
+        }
+        return new Item(itemType, itemName, isTaxable,  price, description, intraTaxRate, interTaxRate);
     }
 
     public Utils.ItemTypes getItemType() {
@@ -77,4 +129,19 @@ public class Item {
     public void setInterTaxRate(int interTaxRate) {
         this.interTaxRate = interTaxRate;
     }
+
+    public int getItemNo () {
+        return itemNo;
+    }
+
+    public double getRate (int quantity, boolean withinState) {
+        double baseRate = this.price;
+        if (withinState) {
+            baseRate += (this.price / 100) * this.intraTaxRate;
+        } else {
+            baseRate += (this.price / 100) * this.interTaxRate;
+        }
+        return baseRate * quantity;
+    }
+
 }
