@@ -5,6 +5,7 @@ import java.util.*;
 
 public class Invoice {
     private Customer customer;
+
     private static int totalInvoices = 0;
     private final int invNo;
     private LocalDate date;
@@ -15,9 +16,9 @@ public class Invoice {
     private int shippingCharges;
     private double total;
     private static String customerNotes;
-    private Utils.Status status;
+    private int status;
 
-    public Invoice(Customer customer, LocalDate date, int paymentTerm, Map<Item, Integer> itemTable, double subTotal, int discount, int shippingCharges,double total, Utils.Status status) {
+    public Invoice(Customer customer, LocalDate date, int paymentTerm, Map<Item, Integer> itemTable, double subTotal, int discount, int shippingCharges, double total, int status) {
         this.customer = customer;
         this.date = date;
         this.paymentTerm = paymentTerm;
@@ -31,11 +32,13 @@ public class Invoice {
         this.invNo = totalInvoices;
     }
 
-    public static Invoice createInvoice(List<Item> items, List<Customer> customers) {
+    public static Invoice create (List<Item> items, List<Customer> customers) {
+        System.out.println("You can add Invoice now");
         Scanner scanner = new Scanner(System.in);
-        showCustomers(customers);
+        Utils.showCustomers(customers);
         System.out.println("Enter the Customer No, you want to create the invoice: ");
         int cusNo = scanner.nextInt();
+        scanner.nextLine();
         Customer cus = customers.get(cusNo - 1);
         LocalDate date = LocalDate.now();
         int paymentTerm = 0; // NET 15
@@ -45,6 +48,7 @@ public class Invoice {
         System.out.println("NET 30 -> 2");
         System.out.println("NET 45 -> 3");
         int paymentTermOption = scanner.nextInt();
+        scanner.nextLine();
         switch (paymentTermOption) {
             case 1:
                 paymentTerm = 15;
@@ -61,17 +65,24 @@ public class Invoice {
         }
         boolean isPurchasing = true;
         while (isPurchasing) {
+
             System.out.println("Option 1 -> Add Items to the list");
             System.out.println("Option 2 -> Remove Items from the list");
             System.out.println("Option 3 -> Stop purchasing");
             int purchaseOption = scanner.nextInt();
+            scanner.nextLine();
+
             switch (purchaseOption) {
                 case 1:
-                    showItems(items);
+                    Utils.showItems(items);
+
                     System.out.println("Enter the Item No: ");
                     int itemNo = scanner.nextInt();
+
                     System.out.println("Enter the Quantity: ");
                     int quantity = scanner.nextInt();
+                    scanner.nextLine();
+
                     itemTable.put(items.get(itemNo - 1), quantity);
                     break;
                 case 2:
@@ -99,6 +110,7 @@ public class Invoice {
                         }
                         itemTable.put(item, itemTable.get(item) - removalQuantity);
                     }
+                    scanner.nextLine();
                     break;
                 case 3:
                     isPurchasing = false;
@@ -133,7 +145,7 @@ public class Invoice {
             shippingCharges = scanner.nextInt();
         }
         invTotal += shippingCharges;
-        return new Invoice(cus, date, paymentTerm, itemTable, subTotal, discount, shippingCharges, invTotal, Utils.Status.DRAFT);
+        return new Invoice(cus, date, paymentTerm, itemTable, subTotal, discount, shippingCharges, invTotal, 0);
     }
 
     public Customer getCustomer() {
@@ -204,40 +216,12 @@ public class Invoice {
         customerNotes = customerNotes;
     }
 
-    public Utils.Status getStatus() {
-        return status;
+    public String getStatus() {
+        return Utils.invoiceStatus.get(status);
     }
 
-    public void setStatus(Utils.Status status) {
+    public void setStatus (int status) {
         this.status = status;
-    }
-
-    private static void showCustomers(List<Customer> customers) {
-        System.out.println("-".repeat(20));
-        System.out.print("|");
-        System.out.print(" Customer No |");
-        System.out.println(" Customer Name |");
-        for (Customer cus : customers) {
-            System.out.print("|");
-            System.out.print(" " + cus.getCusNo() + " |");
-            System.out.println(" " + cus.getName() + " |");
-        }
-        System.out.println("-".repeat(20));
-    }
-
-    private static void showItems(List<Item> items) {
-        System.out.println("-".repeat(20));
-        System.out.print("|");
-        System.out.print(" Item Name |");
-        System.out.print(" Price ");
-        System.out.println("|");
-        for (Item item : items) {
-            System.out.print("|");
-            System.out.print(" " + item.getItemName() + " |");
-            System.out.println(" " + item.getPrice() + " ");
-            System.out.println("|");
-        }
-        System.out.println("-".repeat(20));
     }
 
     public int getInvNo() {
@@ -250,5 +234,31 @@ public class Invoice {
 
     public void setSubTotal(double subTotal) {
         this.subTotal = subTotal;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Invoice Details: \n");
+        sb.append("================\n");
+
+        sb.append("Invoice Number: ").append(invNo).append("\n");
+        sb.append("Customer Name: ").append(customer.getName()).append("\n");
+        sb.append("Date: ").append(date).append("\n");
+
+        sb.append("Payment Term: NET ").append(paymentTerm).append("\n");
+
+        for (Item cartItem : itemTable.keySet()) {
+            sb.append("Item Name: ").append(cartItem.getItemName()).append(" Item Quantity: ").append(itemTable.get(cartItem)).append(" Item Price: ");
+        }
+
+        sb.append("Sub Total: ").append(subTotal).append("\n");
+        sb.append("Discount: ").append(discount).append("\n");
+        sb.append("Shipping Charges: ").append(shippingCharges).append("\n");
+        sb.append("Total: ").append(total).append("\n");
+
+        sb.append("Status: ").append(status);
+
+        return sb.toString();
     }
 }
