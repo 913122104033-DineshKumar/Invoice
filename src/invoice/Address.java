@@ -5,8 +5,8 @@ import java.util.Scanner;
 public class Address {
 
     // Constants
-    private static final String NAME_REGEX = "[a-zA-Z\\s]+";
-    private static final String STREET_REGEX = "[a-zA-Z0-9\\s,.'#-]+";
+    private static final String NAME_REGEX = "[a-zA-Z\\s]{5,}";
+    private static final String STREET_REGEX = "^([a-zA-Z][a-zA-Z0-9-\\s,]{6,})|^([0-9]+[a-zA-Z0-9,\\/\\s.]{6,})";
     private static final String PIN_CODE_REGEX = "\\d{6}";
 
     // Primary Details
@@ -26,27 +26,18 @@ public class Address {
 
     public static Address create () {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter the Country: ");
 
         String country = "";
         country = Utils.getValidInput(country, NAME_REGEX, scanner, "Enter the Valid Country Name (Eg. India):");
 
-        System.out.println("Enter the State: ");
-
         String state = "";
         state = Utils.getValidInput(state, NAME_REGEX, scanner, "Enter the Valid State Name (Eg. Tamil Nadu):");
-
-        System.out.println("Enter the City: ");
 
         String city = "";
         city = Utils.getValidInput(city, NAME_REGEX, scanner, "Enter the Valid City Name (Eg. Madurai):");
 
-        System.out.println("Enter the Street: ");
-
         String street = "";
         street = Utils.getValidInput(street, STREET_REGEX, scanner, "Enter the Valid Street Name (Eg. 14/22 dummy 1st street):");
-
-        System.out.println("Enter the Pin Code: ");
 
         String pinCode = "";
         pinCode = Utils.getValidInput(pinCode, PIN_CODE_REGEX, scanner, "Enter the Valid Pin Code (Eg. 600001):");
@@ -70,8 +61,6 @@ public class Address {
             scanner.nextLine();
             switch (option) {
                 case 1:
-                    System.out.println("Enter the Updated Country Name: ");
-
                     String nCountry = "";
                     nCountry = Utils.getValidInput(nCountry, NAME_REGEX, scanner, "Enter the Valid Country Name (Eg. India):");
 
@@ -80,8 +69,6 @@ public class Address {
                     System.out.println("Updated Country");
                     break;
                 case 2:
-                    System.out.println("Enter the Updated State Name: ");
-
                     String nState = "";
                     nState = Utils.getValidInput(nState, NAME_REGEX, scanner, "Enter the Valid State Name (Eg. Tamil Nadu):");
 
@@ -90,8 +77,6 @@ public class Address {
                     System.out.println("Updated State");
                     break;
                 case 3:
-                    System.out.println("Enter the Updated City Name: ");
-
                     String nCity = "";
                     nCity = Utils.getValidInput(nCity, NAME_REGEX, scanner, "Enter the Valid City Name (Eg. Madurai):");
 
@@ -100,8 +85,6 @@ public class Address {
                     System.out.println("Updated City");
                     break;
                 case 4:
-                    System.out.println("Enter the Updated Street Name: ");
-
                     String nStreet = "";
                     nStreet = Utils.getValidInput(nStreet, STREET_REGEX, scanner, "Enter the Valid Street Name (Eg. 14/22 dummy 1st street):");
 
@@ -110,8 +93,6 @@ public class Address {
                     System.out.println("Updated Street");
                     break;
                 case 5:
-                    System.out.println("Enter the Updated Pin Code: ");
-
                     String nPinCode = "";
                     nPinCode = Utils.getValidInput(nPinCode, PIN_CODE_REGEX, scanner, "Enter the Valid Pin Code (Eg. 600001):");
 

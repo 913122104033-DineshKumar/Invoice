@@ -2,12 +2,13 @@ package invoice;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Customer {
 
     // Constants
-    private static final String NAME_REGEX = "[a-zA-Z\\s'-]+";
-    private static final String EMAIL_REGEX = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
+    private static final String NAME_REGEX = "[a-zA-Z\\s'-]{3,}";
+    private static final String EMAIL_REGEX = "[a-zA-Z][a-zA-Z0-9._%+-]+@[a-z][a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
     private static final String PHONE_REGEX = "\\d{10}";
 
     // Primary Details
@@ -32,57 +33,49 @@ public class Customer {
         this.cusNo = totalCustomers;
     }
 
-    public static Customer create () {
+    public static Customer create (Set<String> emails) {
 
         System.out.println("You can add Customer now");
 
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Enter the Name: ");
-
-        String name = scanner.nextLine();
+        String name = "";
         name = Utils.getValidInput(name, NAME_REGEX, scanner, "Enter Valid Name (Eg. Dinesh Kumar K K)");
 
-        String companyName = "";
         String customerType;
-        System.out.println("Individual -> I, Business -> B");
-        char customerTypeOption = scanner.nextLine().charAt(0);
-        while (Utils.optionValidation(customerTypeOption, 'I', 'B')) {
-            System.out.println("Individual -> I, Business -> B");
-            customerTypeOption = scanner.nextLine().charAt(0);
-        }
-        if (customerTypeOption == 'I') {
-            customerType = "Individual";
-        } else {
-            customerType = "Business";
-            System.out.println("Enter the Company Name: ");
-            companyName = scanner.nextLine();
-        }
+
+        char customerTypeOption = 'A';
+        customerTypeOption = Utils.getValidOption(customerTypeOption, 'I', 'B', scanner, "Individual -> I, Business -> B");
+        customerType = Utils.customerTypes.get(customerTypeOption);
 
         Customer customer = new Customer(customerType, name);
-        if (!companyName.isEmpty()) {
+        if (customerType.equals(Utils.customerTypes.get('B'))) {
+            String companyName = "";
+            companyName = Utils.getValidInput(companyName, NAME_REGEX, scanner, "Enter Company Name (Eg. Zoho Corp)");
             customer.setCompanyName(companyName);
         }
 
         String email = "";
         email = Utils.getValidInput(email, EMAIL_REGEX, scanner, "Enter Valid Email (Eg. abc@gmail.com)");
 
+        while (emails.contains(email) || !email.matches(EMAIL_REGEX)) {
+            System.out.println("Email already exists, try with any email");
+            email = scanner.nextLine();
+        }
+
+        emails.add(email);
         customer.setEmail(email);
 
         String phone = "";
         phone = Utils.getValidInput(phone, PHONE_REGEX, scanner, "Enter the Valid Phone Number (Eg. 1234567890):");
         customer.setPhone(phone);
 
-        System.out.println("Office Address...");
         Address officeAddress = Address.create();
         customer.setAddress(officeAddress);
 
-        System.out.println("Address for shipping, Same -> S, Different -> D");
-        char addressOption = scanner.nextLine().charAt(0);
-        while (Utils.optionValidation(addressOption, 'S', 'D')) {
-            System.out.println("Same Location -> S, Different Location -> D");
-            addressOption = scanner.nextLine().charAt(0);
-        }
+        char addressOption = 'A';
+        addressOption = Utils.getValidOption(addressOption, 'S', 'D',
+                scanner, "Same Location -> S, Different Location -> D");
         if (addressOption == 'S') {
             customer.setShippingAddress(officeAddress);
         } else {
@@ -142,7 +135,7 @@ public class Customer {
         while (isUpdating) {
             System.out.println("Option 1 -> Updating Type");
             System.out.println("Option 2 -> Updating Name");
-            System.out.println("Option 3 -> Updating Company Name");
+            System.out.println("Option 3 -> Updating Company Name (Applicable Businesses Only)");
             System.out.println("Option 4 -> Updating Email");
             System.out.println("Option 5 -> Updating Phone");
             System.out.println("Option 6 -> Exit");
@@ -153,25 +146,18 @@ public class Customer {
 
             switch (option) {
                 case 1:
-                    System.out.println("Individual -> I, Business -> B");
+                    String updatedCustomerType;
 
-                    char customerTypeOption = scanner.nextLine().charAt(0);
-                    while (Utils.optionValidation(customerTypeOption, 'I', 'B')) {
-                        System.out.println("Individual -> I, Business -> B");
-                        customerTypeOption = scanner.nextLine().charAt(0);
-                    }
+                    char customerTypeOption = 'A';
+                    customerTypeOption = Utils.getValidOption(customerTypeOption, 'I', 'B',
+                            scanner, "Individual -> I, Business -> B");
+                    updatedCustomerType = Utils.customerTypes.get(customerTypeOption);
 
-                    if (customerTypeOption == 'B') {
-                        this.setCustomerType("Business");
-                    } else {
-                        this.setCustomerType("Individual");
-                    }
+                    this.setCustomerType(updatedCustomerType);
 
                     System.out.println("Updated Customer Type");
                     break;
                 case 2:
-                    System.out.println("Enter the Updated Name: ");
-
                     String updatedName = "";
                     updatedName = Utils.getValidInput(updatedName, NAME_REGEX, scanner, "Enter Valid Name (Eg. Dinesh Kumar K K)");
 
@@ -180,8 +166,10 @@ public class Customer {
                     System.out.println("Updated Name");
                     break;
                 case 3:
-                    System.out.println("Enter the Updated Company Name: ");
-
+                    if (this.customerType.equals(Utils.customerTypes.get('I'))) {
+                        System.out.println("You are not owning a Business");
+                        break;
+                    }
                     String nCompanyName = "";
                     nCompanyName = Utils.getValidInput(nCompanyName, NAME_REGEX, scanner, "Enter a Valid Company Name (Eg. Dinesh Textiles):");
 
@@ -220,7 +208,7 @@ public class Customer {
         }
     }
 
-    public static Customer search (String customerName, List<Customer> customers) {
+    public static Customer searchByName (String customerName, List<Customer> customers) {
         for (Customer customer : customers) {
             if (customer.getName().equalsIgnoreCase(customerName)) {
                 return customer;

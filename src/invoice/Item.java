@@ -40,61 +40,52 @@ public class Item {
         Scanner scanner = new Scanner(System.in);
         String itemType;
         String itemUnit;
-        double price;
         boolean isTaxable = false;
-        String description = "";
-        double intraTaxRate = 0;
-        double interTaxRate = 0;
+        double intraTaxRate = -1;
+        double interTaxRate = -1;
 
-        System.out.println("Item Type: Goods -> G, Service -> S");
-        char itemTypeOption = scanner.nextLine().charAt(0);
-        while (Utils.optionValidation(itemTypeOption, 'G', 'S')) {
-            System.out.println("Provide a proper type (G or S): ");
-            itemTypeOption = scanner.nextLine().charAt(0);
-        }
-        itemType = Utils.itemUnits.get(itemTypeOption);
+        // Item Type Input
+        char itemTypeOption = 'A';
+        itemTypeOption = Utils.getValidOption(itemTypeOption, 'G', 'S',
+                scanner, "Item Type: Goods -> G, Service -> S");
+        itemType = Utils.itemTypes.get(itemTypeOption);
 
+        // Item Unit Input
         System.out.println("Item Unit: Pieces -> P, Meters -> M, Box -> B, Undefined -> N");
         char itemUnitOption = scanner.nextLine().charAt(0);
-        while (Utils.optionValidation(itemUnitOption, 'P', 'M') && Utils.optionValidation(itemUnitOption, 'B', 'N')) {
+        while (itemUnitOption != 'P' && itemUnitOption != 'B' && itemUnitOption != 'M' && itemUnitOption != 'N') {
             System.out.println("Enter a Valid input (Pieces -> P, Meters -> M, Box -> B, Undefined -> N): ");
             itemUnitOption = scanner.nextLine().charAt(0);
         }
         itemUnit = Utils.itemUnits.get(itemUnitOption);
 
+        // Item Name Input
         String itemName = "";
         itemName = Utils.getValidInput(itemName, NAME_REGEX, scanner, "Enter the Valid Item Name (Eg. Punam Saree)");
 
-        System.out.println("Is tax applied for this item, if Yes -> Y, No -> N");
-        char taxableOption = scanner.nextLine().charAt(0);
-        while (Utils.optionValidation(taxableOption, 'Y', 'N')) {
-            taxableOption = scanner.nextLine().charAt(0);
-        }
+        char taxableOption = 'A';
+        taxableOption = Utils.getValidOption(taxableOption, 'Y', 'N',
+                scanner, "Is tax applied for this item, if Yes -> Y, No -> N");
         if (taxableOption == 'Y') {
             isTaxable = true;
-            System.out.println("Enter the Intra State tax: ");
-            intraTaxRate = scanner.nextDouble();
+
+            intraTaxRate = Utils.getValidInput(intraTaxRate, 0.1, 28, scanner, "Enter the Intra Tax Rate (0 - 28)% :");
             scanner.nextLine();
-            System.out.println("Enter the Inter State tax: ");
-            interTaxRate = scanner.nextDouble();
+
+            interTaxRate = Utils.getValidInput(interTaxRate, 0.1, 28, scanner, "Enter the Inter Tax Rate (0 - 28)% :");
             scanner.nextLine();
+        } else {
+            intraTaxRate = 0;
+            interTaxRate = 0;
         }
 
-        System.out.println("Enter the Selling price of the item: ");
-        price = scanner.nextDouble();
+        double price = -1;
+        price = Utils.getValidInput(price, 50, Integer.MAX_VALUE, scanner, "Enter the Selling price of the item (Can't be Negative):");
         scanner.nextLine();
 
-        System.out.println("Would you like to enter the description for the item, if yes -> Y, No -> N");
-        char descriptionOption = scanner.nextLine().charAt(0);
-        while (Utils.optionValidation(descriptionOption, 'Y', 'N')) {
-            descriptionOption = scanner.nextLine().charAt(0);
-        }
-        if (descriptionOption == 'Y') {
-            System.out.println("Enter the description: ");
-            description = scanner.nextLine();
-        }
+        String nDescription = getDescription(scanner);
 
-        return new Item(itemType, itemUnit, itemName, isTaxable,  price, description, intraTaxRate, interTaxRate);
+        return new Item(itemType, itemUnit, itemName, isTaxable,  price, nDescription, intraTaxRate, interTaxRate);
     }
 
     public void update () {
@@ -143,20 +134,13 @@ public class Item {
             scanner.nextLine();
             switch (option) {
                 case 1:
-                    System.out.println("Item Type: Goods -> G, Service -> S");
 
-                    char itemTypeOption = scanner.nextLine().charAt(0);
+                    char itemTypeOption = 'A';
 
-                    while (Utils.optionValidation(itemTypeOption, 'G', 'S')) {
-                        System.out.println("Provide a proper type (G or S): ");
-                        itemTypeOption = scanner.nextLine().charAt(0);
-                    }
+                    itemTypeOption = Utils.getValidOption(itemTypeOption, 'G', 'S',
+                            scanner, "Item Type: Goods -> G, Service -> S");
 
-                    if (itemTypeOption == 'G') {
-                        itemType = "Goods";
-                    } else {
-                        itemType = "Services";
-                    }
+                    this.setItemType(Utils.itemTypes.get(itemTypeOption));
 
                     System.out.println("Updated Item Type");
                     break;
@@ -172,20 +156,20 @@ public class Item {
                     System.out.println("Updated Item Name");
                     break;
                 case 3:
-                    char itemUnitOption = scanner.nextLine().charAt(0);
+                    char itemUnitOption = 'A';
 
-                    while (Utils.optionValidation(itemUnitOption, 'P', 'M') || Utils.optionValidation(itemUnitOption, 'B', 'N')) {
+                    while (itemUnitOption != 'P' && itemUnitOption != 'B' && itemUnitOption != 'M' && itemUnitOption != 'N') {
                         System.out.println("Enter a Valid input (Pieces -> P, Meters -> M, Box -> B, Undefined -> N): ");
                         itemUnitOption = scanner.nextLine().charAt(0);
                     }
 
-                    String uItemUnit = Utils.itemUnits.get(itemUnitOption);
-                    this.setItemUnit(uItemUnit);
+                    this.setItemUnit(Utils.itemUnits.get(itemUnitOption));
                     break;
                 case 4:
-                    System.out.println("Enter the Updated Item Price: ");
+                    double updatedPrice = -1;
 
-                    double updatedPrice = scanner.nextDouble();
+                    updatedPrice = Utils.getValidInput(updatedPrice, 50, Integer.MAX_VALUE, scanner, "Enter the Selling price of the item (Can't be Negative):");
+
                     scanner.nextLine();
 
                     this.setPrice(updatedPrice);
@@ -193,19 +177,15 @@ public class Item {
                     System.out.println("Updated Item Price");
                     break;
                 case 5:
-                    System.out.println("Enter the Item Description: ");
-
-                    String nDescription = scanner.nextLine();
-
-                    if (!nDescription.trim().isEmpty()) {
-                        this.setDescription(nDescription);
-                    }
+                    this.setDescription(getDescription(scanner));
 
                     System.out.println("Updated Item Description");
                     break;
                 case 6:
                     System.out.println(this.itemName + " is updated");
+
                     isUpdating = false;
+
                     break;
                 default:
                     System.out.println("Enter a valid input (1 - 6)");
@@ -227,12 +207,9 @@ public class Item {
             scanner.nextLine();
             switch (option) {
                 case 1:
-                    System.out.println("Is tax applied for this item, if Yes -> Y, No -> N");
 
-                    char taxableOption = scanner.nextLine().charAt(0);
-                    while (Utils.optionValidation(taxableOption, 'Y', 'N')) {
-                        taxableOption = scanner.nextLine().charAt(0);
-                    }
+                    char taxableOption = 'A';
+                    taxableOption = Utils.getValidOption(taxableOption, 'Y', 'N', scanner, "Is tax applied for this item, if Yes -> Y, No -> N");
 
                     if (taxableOption == 'N') {
                         this.setIsTaxable(false);
@@ -241,14 +218,14 @@ public class Item {
                     } else {
                         this.setIsTaxable(true);
 
-                        System.out.println("Enter the Intra State Tax Rate(%): ");
+                        double nIntraTaxRate = -1;
+                        nIntraTaxRate = Utils.getValidInput(nIntraTaxRate, 0.1, 28, scanner, "Enter the Intra Tax Rate (0 - 28)% :");
 
-                        double nIntraTaxRate = scanner.nextDouble();
                         this.setIntraTaxRate(nIntraTaxRate);
 
-                        System.out.println("Enter the Inter State Tax Rate(%): ");
+                        double nInterTaxRate = -1;
+                        nInterTaxRate = Utils.getValidInput(nInterTaxRate, 0.1, 28, scanner, "Enter the Inter Tax Rate (0 - 28)% :");
 
-                        double nInterTaxRate = scanner.nextDouble();
                         this.setInterTaxRate(nInterTaxRate);
 
                         scanner.nextLine();
@@ -261,12 +238,11 @@ public class Item {
                         break;
                     }
 
-                    System.out.println("Enter Intra State Tax Rate(%): ");
-
-                    double nIntraStateTaxRate = scanner.nextDouble();
+                    double nIntraTaxRate = -1;
+                    nIntraTaxRate = Utils.getValidInput(nIntraTaxRate, 0.1, 28, scanner, "Enter the Intra Tax Rate (0 - 28)% :");
                     scanner.nextLine();
 
-                    this.setIntraTaxRate(nIntraStateTaxRate);
+                    this.setIntraTaxRate(nIntraTaxRate);
 
                     System.out.println("Updated Intra State Tax Rate");
                     break;
@@ -276,12 +252,11 @@ public class Item {
                         break;
                     }
 
-                    System.out.println("Enter Inter State Tax Rate(%): ");
-
-                    double nInterStateTaxRate = scanner.nextDouble();
+                    double nInterTaxRate = -1;
+                    nInterTaxRate = Utils.getValidInput(nInterTaxRate, 0.1, 28, scanner, "Enter the Inter Tax Rate (0 - 28)% :");
                     scanner.nextLine();
 
-                    this.setInterTaxRate(nInterStateTaxRate);
+                    this.setInterTaxRate(nInterTaxRate);
 
                     System.out.println("Updated Inter State Tax Rate");
                     break;
@@ -383,6 +358,21 @@ public class Item {
         return baseRate * quantity;
     }
 
+    private static String getDescription (Scanner scanner) {
+        String descript = "";
+
+        char descriptionOption = 'A';
+
+        descriptionOption = Utils.getValidOption(descriptionOption, 'Y', 'N',
+                scanner, "Would you like to enter the description for the item, if yes -> Y, No -> N");
+
+        if (descriptionOption == 'Y') {
+            descript = Utils.getValidInput(descript, NAME_REGEX, scanner, "Enter the description (Can't have digits in it):");
+        }
+
+        return descript;
+    }
+
     public String toString () {
         StringBuilder sb = new StringBuilder();
 
@@ -391,6 +381,7 @@ public class Item {
         sb.append("Item Number: ").append(itemNo).append("\n");
         sb.append("Item Name: ").append(itemName).append("\n");
         sb.append("Item Type: ").append(itemType).append("\n");
+        sb.append("Item Unit: ").append(itemUnit).append("\n");
 
         if (isTaxable) {
             sb.append("Intra State Tax Rate: ").append(intraTaxRate).append("\n");
