@@ -1,8 +1,12 @@
-package invoice;
+package invoice.src;
+
+import invoice.utils.CustomerUtil;
+import invoice.utils.Utils;
 
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class Customer {
 
@@ -26,6 +30,8 @@ public class Customer {
     // Shipping Address
     private Address shippingAddress;
 
+    private static CustomerUtil customerUtil;
+
     public Customer (String customerType, String name) {
         this.customerType = customerType;
         this.name = name;
@@ -34,64 +40,45 @@ public class Customer {
     }
 
     public static Customer create (Set<String> emails) {
-
-        System.out.println("You can add Customer now");
+        System.out.println("\nYou can add Customer now");
 
         Scanner scanner = new Scanner(System.in);
 
-        String name = "";
-        name = Utils.getValidInput(name, NAME_REGEX, scanner, "Enter Valid Name (Eg. Dinesh Kumar K K)");
+        if (customerUtil == null) {
+            customerUtil = new CustomerUtil(scanner);
+        }
 
-        String customerType;
+        String name = customerUtil.getNameInput();
 
-        char customerTypeOption = 'A';
-        customerTypeOption = Utils.getValidOption(customerTypeOption, 'I', 'B', scanner, "Individual -> I, Business -> B");
-        customerType = Utils.customerTypes.get(customerTypeOption);
+        String customerType = customerUtil.getCustomerTypeInput();
 
         Customer customer = new Customer(customerType, name);
-        if (customerType.equals(Utils.customerTypes.get('B'))) {
-            String companyName = "";
-            companyName = Utils.getValidInput(companyName, NAME_REGEX, scanner, "Enter Company Name (Eg. Zoho Corp)");
+        if (customerType.equals("BUSINESS")) {
+            String companyName = customerUtil.getCompanyNameInput();
             customer.setCompanyName(companyName);
         }
 
-        String email = "";
-        email = Utils.getValidInput(email, EMAIL_REGEX, scanner, "Enter Valid Email (Eg. abc@gmail.com)");
-
-        while (emails.contains(email) || !email.matches(EMAIL_REGEX)) {
-            System.out.println("Email already exists, try with any email");
-            email = scanner.nextLine();
-        }
-
+        String email = customerUtil.getEmailInput(emails);
         emails.add(email);
         customer.setEmail(email);
 
-        String phone = "";
-        phone = Utils.getValidInput(phone, PHONE_REGEX, scanner, "Enter the Valid Phone Number (Eg. 1234567890):");
+        String phone = customerUtil.getPhoneInput();
         customer.setPhone(phone);
 
         Address officeAddress = Address.create();
         customer.setAddress(officeAddress);
 
-        char addressOption = 'A';
-        addressOption = Utils.getValidOption(addressOption, 'S', 'D',
-                scanner, "Same Location -> S, Different Location -> D");
-        if (addressOption == 'S') {
-            customer.setShippingAddress(officeAddress);
-        } else {
-            System.out.println("Shipping Address...");
-            Address shippingAddress = Address.create();
-            customer.setShippingAddress(shippingAddress);
-        }
+        Address shippingAddress = customerUtil.getShippingAddressInput(officeAddress);
+        customer.setShippingAddress(shippingAddress);
 
         return customer;
     }
 
-    public void update () {
+    public void update (Set<String> emails) {
         boolean isUpdating = true;
         Scanner scanner = new Scanner(System.in);
         while (isUpdating) {
-            System.out.println("Option 1 -> Updating the Customer's Primary Detail");
+            System.out.println("\nOption 1 -> Updating the Customer's Primary Detail");
 
             // Office Address
             System.out.println("Option 2 -> Updating the Office Address");
@@ -105,12 +92,13 @@ public class Customer {
             System.out.println("-".repeat(30));
 
             // Option
-            System.out.println("Enter the option: ");
-            int option = scanner.nextInt();
-            scanner.nextLine();
+            System.out.println("\nEnter the option: ");
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
                 case 1:
-                    updateCustomerDetails();
+                    updateCustomerDetails(emails);
                     break;
                 case 2:
                     this.address.update();
@@ -119,97 +107,97 @@ public class Customer {
                     this.shippingAddress.update();
                     break;
                 case 4:
-                    System.out.println(this.name + " is updated");
+                    System.out.println("\n" + this.name + " is updated");
                     isUpdating = false;
                     break;
                 default:
-                    System.out.println("Enter a valid input (1 - 4)");
+                    System.out.println("\nEnter a valid input (1 - 4)");
                     break;
             }
         }
     }
 
-    private void updateCustomerDetails () {
+    private void updateCustomerDetails (Set<String> emails) {
         boolean isUpdating = true;
         Scanner scanner = new Scanner(System.in);
         while (isUpdating) {
-            System.out.println("Option 1 -> Updating Type");
+            System.out.println("\nOption 1 -> Updating Type");
             System.out.println("Option 2 -> Updating Name");
             System.out.println("Option 3 -> Updating Company Name (Applicable Businesses Only)");
             System.out.println("Option 4 -> Updating Email");
             System.out.println("Option 5 -> Updating Phone");
             System.out.println("Option 6 -> Exit");
 
-            System.out.println("Enter the option: ");
-            int option = scanner.nextInt();
-            scanner.nextLine();
+            System.out.println("\nEnter the option: ");
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
 
             switch (option) {
                 case 1:
-                    String updatedCustomerType;
+                    String previousCustomerType = this.customerType;
 
-                    char customerTypeOption = 'A';
-                    customerTypeOption = Utils.getValidOption(customerTypeOption, 'I', 'B',
-                            scanner, "Individual -> I, Business -> B");
-                    updatedCustomerType = Utils.customerTypes.get(customerTypeOption);
+                    String updatedCustomerType = customerUtil.getCustomerTypeInput();
 
                     this.setCustomerType(updatedCustomerType);
 
-                    System.out.println("Updated Customer Type");
+                    System.out.println("\nCustomer's Type updated from " + previousCustomerType + " to " + updatedCustomerType );
                     break;
                 case 2:
-                    String updatedName = "";
-                    updatedName = Utils.getValidInput(updatedName, NAME_REGEX, scanner, "Enter Valid Name (Eg. Dinesh Kumar K K)");
+                    String previousName = this.name;
+
+                    String updatedName = customerUtil.getNameInput();
 
                     this.setName(updatedName);
 
-                    System.out.println("Updated Name");
+                    System.out.println("\nCustomer's Name updated from " + previousName + " to " + updatedName );
                     break;
                 case 3:
-                    if (this.customerType.equals(Utils.customerTypes.get('I'))) {
-                        System.out.println("You are not owning a Business");
+                    String previousCompanyName = this.companyName;
+
+                    if (this.customerType.equals("INDIVIDUAL")) {
+                        System.out.println("\nYou are not owning a Business");
                         break;
                     }
-                    String nCompanyName = "";
-                    nCompanyName = Utils.getValidInput(nCompanyName, NAME_REGEX, scanner, "Enter a Valid Company Name (Eg. Dinesh Textiles):");
+                    String nCompanyName = customerUtil.getCompanyNameInput();
 
                     this.setCompanyName(nCompanyName);
 
-                    System.out.println("Updated Company Name");
+                    System.out.println("\nCustomer's Company name updated from " + previousCompanyName + " to " + nCompanyName );
                     break;
                 case 4:
-                    System.out.println("Enter the Updated Email: ");
+                    String previousEmail = this.email;
 
-                    String nEmail = "";
-                    nEmail = Utils.getValidInput(nEmail, EMAIL_REGEX, scanner, "Enter Valid Email (Eg. abc@gmail.com)");
+                    String nEmail = customerUtil.getEmailInput(emails);
+                    emails.remove(previousEmail);
+                    emails.add(nEmail);
 
                     this.setEmail(nEmail);
 
-                    System.out.println("Updated Email");
+                    System.out.println("\nCustomer's Email updated from " + previousEmail + " to " + nEmail );
                     break;
                 case 5:
-                    System.out.println("Enter the Phone: ");
+                    String previousPhone = this.phone;
 
-                    String nPhone = "";
-                    nPhone = Utils.getValidInput(nPhone, PHONE_REGEX, scanner, "Enter the Valid Phone Number (Eg. 1234567890):");
+                    String nPhone = customerUtil.getPhoneInput();
 
                     this.setEmail(nPhone);
 
-                    System.out.println("Updated Email");
+                    System.out.println("\nCustomer's Phone Number updated from " + previousPhone + " to " + nPhone);
                     break;
                 case 6:
-                    System.out.println("Customer Primary Details is updated");
+                    System.out.println("\nCustomer's Primary Details is updated");
                     isUpdating = false;
                     break;
                 default:
-                    System.out.println("Enter a valid input (1 - 6)");
+                    System.out.println("\nEnter a valid input (1 - 6)");
                     break;
             }
         }
     }
 
-    public static Customer searchByName (String customerName, List<Customer> customers) {
-        for (Customer customer : customers) {
+    public static Customer searchByName (String customerName, TreeMap<Integer, Customer> customers) {
+        for (Integer cusNo : customers.keySet()) {
+            Customer customer = customers.get(cusNo);
             if (customer.getName().equalsIgnoreCase(customerName)) {
                 return customer;
             }

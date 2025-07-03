@@ -1,4 +1,6 @@
-package invoice;
+package invoice.src;
+
+import invoice.utils.Utils;
 
 import java.util.Scanner;
 
@@ -27,20 +29,15 @@ public class Address {
     public static Address create () {
         Scanner scanner = new Scanner(System.in);
 
-        String country = "";
-        country = Utils.getValidInput(country, NAME_REGEX, scanner, "Enter the Valid Country Name (Eg. India):");
+        String country = Utils.getAddressFieldInput(NAME_REGEX, scanner, "India", "Country");
 
-        String state = "";
-        state = Utils.getValidInput(state, NAME_REGEX, scanner, "Enter the Valid State Name (Eg. Tamil Nadu):");
+        String state = Utils.getAddressFieldInput(NAME_REGEX, scanner, "Tamil Nadu", "State");
 
-        String city = "";
-        city = Utils.getValidInput(city, NAME_REGEX, scanner, "Enter the Valid City Name (Eg. Madurai):");
+        String city = Utils.getAddressFieldInput(NAME_REGEX, scanner,"Madurai", "City");
 
-        String street = "";
-        street = Utils.getValidInput(street, STREET_REGEX, scanner, "Enter the Valid Street Name (Eg. 14/22 dummy 1st street):");
+        String street = Utils.getAddressFieldInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street");
 
-        String pinCode = "";
-        pinCode = Utils.getValidInput(pinCode, PIN_CODE_REGEX, scanner, "Enter the Valid Pin Code (Eg. 600001):");
+        String pinCode = Utils.getAddressFieldInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code");
 
         return new Address(country, state, city, street, pinCode);
     }
@@ -49,59 +46,65 @@ public class Address {
         boolean isUpdating = true;
         Scanner scanner = new Scanner(System.in);
         while (isUpdating) {
-            System.out.println("Option 1 -> Updating Country");
+            System.out.println("\nOption 1 -> Updating Country");
             System.out.println("Option 2 -> Updating State");
             System.out.println("Option 3 -> Updating City");
             System.out.println("Option 4 -> Updating Street");
             System.out.println("Option 5 -> Updating Pin Code");
             System.out.println("Option 6 -> Exiting");
 
-            System.out.println("Enter the Option: ");
-            int option = scanner.nextInt();
-            scanner.nextLine();
+            System.out.println("\nEnter the Option: ");
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
                 case 1:
-                    String nCountry = "";
-                    nCountry = Utils.getValidInput(nCountry, NAME_REGEX, scanner, "Enter the Valid Country Name (Eg. India):");
+                    String previousCountry = this.country;
+
+                    String nCountry = Utils.getAddressFieldInput(NAME_REGEX, scanner, "India", "Country");
 
                     this.setCountry(nCountry);
 
-                    System.out.println("Updated Country");
+                    System.out.println("\nCustomer's Country updated from " + previousCountry + " to " + nCountry);
                     break;
                 case 2:
-                    String nState = "";
-                    nState = Utils.getValidInput(nState, NAME_REGEX, scanner, "Enter the Valid State Name (Eg. Tamil Nadu):");
+                    String previousState = this.state;
+
+                    String nState = Utils.getAddressFieldInput(NAME_REGEX, scanner, "Tamil Nadu", "State");
 
                     this.setState(nState);
 
-                    System.out.println("Updated State");
+                    System.out.println("Customer's State updated from " + previousState + " to " + nState);
                     break;
                 case 3:
-                    String nCity = "";
-                    nCity = Utils.getValidInput(nCity, NAME_REGEX, scanner, "Enter the Valid City Name (Eg. Madurai):");
+                    String previousCity = this.city;
+
+                    String nCity = Utils.getAddressFieldInput(NAME_REGEX, scanner,"Madurai", "City");
 
                     this.setCity(nCity);
 
-                    System.out.println("Updated City");
+                    System.out.println("\nCustomer's City updated from " + previousCity + " to " + nCity);
                     break;
                 case 4:
-                    String nStreet = "";
-                    nStreet = Utils.getValidInput(nStreet, STREET_REGEX, scanner, "Enter the Valid Street Name (Eg. 14/22 dummy 1st street):");
+                    String previousStreet = this.street;
+
+                    String nStreet = Utils.getAddressFieldInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street");
 
                     this.setStreet(nStreet);
 
-                    System.out.println("Updated Street");
+                    System.out.println("\nCustomer's Street updated from " + previousStreet + " to " + nStreet);
                     break;
                 case 5:
-                    String nPinCode = "";
-                    nPinCode = Utils.getValidInput(nPinCode, PIN_CODE_REGEX, scanner, "Enter the Valid Pin Code (Eg. 600001):");
+                    String previousPinCode = this.pinCode;
+
+                    String nPinCode = Utils.getAddressFieldInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code");
 
                     this.setPinCode(nPinCode);
 
-                    System.out.println("Updated Pin Code");
+                    System.out.println("\nCustomer's Pin Code updated from " + previousPinCode + " to " + nPinCode);
                     break;
                 case 6:
-                    System.out.println("Successfully updated, exiting...");
+                    System.out.println("\nSuccessfully updated, exiting...");
                     isUpdating = false;
                     break;
                 default:

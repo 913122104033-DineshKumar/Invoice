@@ -1,4 +1,10 @@
-import invoice.*;
+import com.sun.source.tree.Tree;
+import invoice.src.Customer;
+import invoice.src.Invoice;
+import invoice.src.Item;
+import invoice.utils.CustomerUtil;
+import invoice.utils.InvoiceUtil;
+import invoice.utils.Utils;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -7,57 +13,59 @@ public class Main {
 
     private static final String NAME_REGEX = "[a-zA-Z\\s'-]+";
     private static Scanner scanner;
-    private static List<Item> items;
-    private static List<Customer> customers;
+    private static TreeMap<Integer, Item> items;
+    private static TreeMap<Integer, Customer> customers;
     private static Set<String> customerEmails;
-    private static List<Invoice> invoices;
+    private static TreeMap<Integer, Invoice> invoices;
     private static InvoiceUtil invoiceUtils;
 
     public static void main(String[] args) {
         Utils.initialize();
         scanner = new Scanner(System.in);
         invoiceUtils = new InvoiceUtil(scanner);
-        customers = new ArrayList<>();
-        items = new ArrayList<>();
-        invoices = new ArrayList<>();
+        customers = new TreeMap<>();
+        items = new TreeMap<>();
+        invoices = new TreeMap<>();
         customerEmails = new HashSet<>();
         boolean isRunning = true;
         while (isRunning) {
-            System.out.println("Option 1 -> Item Module");
+            System.out.println("\nOption 1 -> Item Module");
             System.out.println("Option 2 -> Customer Module");
             System.out.println("Option 3 ->  Invoice Module");
             System.out.println("Option 4 -> Quit");
             System.out.println("-".repeat(20));
-            System.out.println("Enter the option: ");
-            int option = scanner.nextInt();
-            scanner.nextLine();
+
+            System.out.println("\nEnter the option: ");
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
 
                 case 1:
-                    System.out.println("Entering into Item Module...");
+                    System.out.println("\nEntering into Item Module...");
                     itemModule();
 
                     break;
 
                 case 2:
-                    System.out.println("Entering into Customer Module...");
+                    System.out.println("\nEntering into Customer Module...");
                     customerModule();
 
                     break;
 
                 case 3:
-                    System.out.println("Entering into Invoice Module...");
+                    System.out.println("\nEntering into Invoice Module...");
                     invoiceModule();
 
                     break;
 
                 case 4:
-                    System.out.println("Exiting the app...");
+                    System.out.println("\nExiting the app...");
                     isRunning = false;
 
                     break;
                 default:
-                    System.out.println("Enter a valid input (1 - 4)");
+                    System.out.println("\nEnter a valid input (1 - 4)");
 
                     break;
             }
@@ -68,71 +76,92 @@ public class Main {
     private static void itemModule() {
         boolean isRunning = true;
         while (isRunning) {
-            System.out.println("Option 1 -> Adding Item");
+            System.out.println("\nOption 1 -> Adding Item");
             System.out.println("Option 2 -> Updating Item");
             System.out.println("Option 3 -> Searching Item");
             System.out.println("Option 4 -> Deleting Item");
             System.out.println("Option 5 -> Exit");
-            int option = scanner.nextInt();
-            scanner.nextLine();
+
+            System.out.println("\nEnter the Option: ");
+
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
                 case 1:
                     Item item = Item.create();
-                    items.add(item);
+                    items.put(item.getItemNo(), item);
 
-                    System.out.println(item.toString());
+                    System.out.println("\n" + item.toString());
                     break;
 
                 case 2:
                     if (items.isEmpty()) {
-                        System.out.println("There is no Items available to Update");
+                        System.out.println("\nThere is no Items available to Update");
                         break;
                     }
 
                     Utils.showItems(items);
 
-                    int rowNo = -1;
-                    rowNo = Utils.getValidInput(rowNo, 1, items.size() + 1, scanner, "Enter a Valid Item Number (1 - " + items.size() + " )") - 1;
+                    System.out.println("Enter the Item No from the table");
+                    int itemNo = 0;
+                    itemNo = (int) Utils.handleIntegerInputMisMatches(itemNo, scanner);
 
-                    scanner.nextLine();
+                    itemNo = Utils.getValidInput(itemNo, items.firstKey(), items.lastKey(), scanner, "Item Number");
 
-                    Item uItem = items.get(rowNo);
+                    Item uItem = items.get(itemNo);
                     uItem.update();
 
                     System.out.println(uItem.toString());
                     break;
 
                 case 3:
-                    String itemName = "";
 
-                    itemName = Utils.getValidInput(itemName, NAME_REGEX, scanner, "Enter a Valid Item Name (Punam Saree): ");
+                    if (items.isEmpty()) {
+                        System.out.println("\nThere are no Items to search");
+                        break;
+                    }
+
+                    System.out.println("\nEnter Item Name (Eg. Punam Saree): ");
+
+                    String itemName = scanner.nextLine();
+
+                    itemName = Utils.getValidInput(itemName, NAME_REGEX, scanner, "Punam Saree", "Item Name");
 
                     Item searchItem = Item.search(itemName, items);
 
                     if (searchItem != null) {
                         System.out.println(searchItem.toString());
                     } else {
-                        System.out.println("Item not found");
+                        System.out.println("\nItem not found");
                     }
                     break;
 
                 case 4:
+
+                    if (items.isEmpty()) {
+                        System.out.println("\nThere is no items to delete");
+                        break;
+                    }
+
                     Utils.showItems(items);
 
-                    int deleteIndexNo = -1;
-                    deleteIndexNo = Utils.getValidInput(deleteIndexNo, 1, items.size() + 1, scanner, "Enter a Valid Item Number (1 - " + items.size() + " )") - 1;
-                    scanner.nextLine();
+                    System.out.println("\nEnter the Item Number from the table: ");
+                    int deleteItemNo = 0;
+                    deleteItemNo = (int) Utils.handleIntegerInputMisMatches(deleteItemNo, scanner);;
 
-                    System.out.println(items.get(deleteIndexNo).getItemName() + " is deleted successfully...");
-                    items.remove(deleteIndexNo);
+                    deleteItemNo = Utils.getValidInput(deleteItemNo, items.firstKey(), items.lastKey(), scanner, "Item Number");
+
+                    System.out.println("\n" + items.get(deleteItemNo).getItemName() + " is deleted successfully...");
+                    items.remove(deleteItemNo);
                     break;
 
                 case 5:
-                    System.out.println("Exiting the Item Module...");
+                    System.out.println("\nExiting the Item Module...");
                     isRunning = false;
                     break;
                 default:
-                    System.out.println("Enter Valid Option (1 - 5)");
+                    System.out.println("\nEnter Valid Option (1 - 5)");
                     break;
             }
         }
@@ -141,76 +170,97 @@ public class Main {
     private static void customerModule() {
         boolean isRunning = true;
         while (isRunning) {
-            System.out.println("Option 1 -> Adding Customer");
+            System.out.println("\nOption 1 -> Adding Customer");
             System.out.println("Option 2 -> Updating Customer");
             System.out.println("Option 3 -> Searching Customer");
             System.out.println("Option 4 -> Deleting Customer");
             System.out.println("Option 5 -> Exit");
-            int option = scanner.nextInt();
-            scanner.nextLine();
+
+            System.out.println("\nEnter the Option: ");
+
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
                 case 1:
                     Customer customer = Customer.create(customerEmails);
-                    customers.add(customer);
+                    customers.put(customer.getCusNo(), customer);
 
-                    System.out.println(customer.toString());
+                    System.out.println("\n" + customer.toString());
                     break;
 
                 case 2:
                     if (customers.isEmpty()) {
-                        System.out.println("There is no Customers available to Update");
+                        System.out.println("\nThere is no Customers available to Update");
                         break;
                     }
 
                     Utils.showCustomers(customers);
 
-                    int rowNo = -1;
-                    rowNo = Utils.getValidInput(rowNo, 1, invoices.size() + 1, scanner, "Enter a Valid Customer Number (1 - " + customers.size() + " )") - 1;
+                    System.out.println("\nEnter the Customer Number: ");
+                    int customerNo = 0;
+                    customerNo = (int) Utils.handleIntegerInputMisMatches(customerNo, scanner);
 
-                    scanner.nextLine();
+                    customerNo = Utils.getValidInput(customerNo, customers.firstKey(), customers.lastKey(), scanner, "Customer Number");
 
-                    Customer uCustomer = customers.get(rowNo);
-                    uCustomer.update();
+                    Customer uCustomer = customers.get(customerNo);
+                    uCustomer.update(customerEmails);
 
-                    System.out.println(uCustomer.toString());
+                    System.out.println("\n" + uCustomer.toString());
                     break;
 
                 case 3:
-                    String customerName = "";
 
-                    customerName = Utils.getValidInput(customerName, NAME_REGEX, scanner, "Enter a Valid Customer Name (Dinesh Kumar K K): ");
+                    if (customers.isEmpty()) {
+                        System.out.println("\nThere are no Customers to search");
+                        break;
+                    }
+
+                    System.out.println("Enter the Customer Name: ");
+
+                    String customerName = scanner.nextLine();
+
+                    customerName = Utils.getValidInput(customerName, NAME_REGEX, scanner, "Dinesh Kumar K K", "Customer Name");
 
                     Customer searchCustomer = Customer.searchByName(customerName, customers);
 
                     if (searchCustomer != null) {
-                        System.out.println(searchCustomer.toString());
+                        System.out.println("\n" + searchCustomer.toString());
                     } else {
                         System.out.println("Customer not found");
                     }
                     break;
 
                 case 4:
+                    if (customers.isEmpty()) {
+                        System.out.println("\nThere are no Customers to delete");
+                        break;
+                    }
+
                     Utils.showCustomers(customers);
 
-                    int deleteIndexNo = -1;
-                    deleteIndexNo = Utils.getValidInput(deleteIndexNo, 1, customers.size() + 1, scanner, "Enter a Valid Customer Number (1 - " + customers.size() + " )") - 1;
+                    System.out.println("\nEnter the Customer No from the table: ");
 
-                    scanner.nextLine();
+                    int deleteIndexNo = 0;
+                    deleteIndexNo = (int) Utils.handleIntegerInputMisMatches(deleteIndexNo, scanner);
+
+                    deleteIndexNo = Utils.getValidInput(deleteIndexNo, customers.firstKey(), customers.lastKey(), scanner, "Customer Number");
 
                     customerEmails.remove(customers.get(deleteIndexNo).getEmail());
-                    System.out.println(customers.get(deleteIndexNo).getName() + " " + "is deleted successfully...");
+
+                    System.out.println("\n" + customers.get(deleteIndexNo).getName() + " " + "is deleted successfully...");
 
                     customers.remove(deleteIndexNo);
 
                     break;
 
                 case 5:
-                    System.out.println("Exiting the Customer Module...");
+                    System.out.println("\nExiting the Customer Module...");
                     isRunning = false;
                     break;
 
                 default:
-                    System.out.println("Enter Valid Option (1 - 5)");
+                    System.out.println("\nEnter Valid Option (1 - 5)");
                     break;
             }
         }
@@ -219,54 +269,65 @@ public class Main {
     private static void invoiceModule() {
         boolean isRunning = true;
         while (isRunning) {
-            System.out.println("Option 1 -> Adding Invoice");
+            System.out.println("\nOption 1 -> Adding Invoice");
             System.out.println("Option 2 -> Updating Invoice");
             System.out.println("Option 3 -> Searching Invoice");
             System.out.println("Option 4 -> Deleting Invoice");
             System.out.println("Option 5 -> Exit");
-            int option = scanner.nextInt();
-            scanner.nextLine();
+
+            System.out.println("\nEnter the Option: ");
+
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
                 case 1:
                     Invoice invoice = create();
 
                     if (invoice == null) {
-                        System.out.println("Can't Create Invoice, due to no Customers...");
+                        System.out.println("\nCan't Create Invoice, due to no Customers...");
                         break;
                     }
 
-                    invoices.add(invoice);
+                    invoices.put(invoice.getInvNo(),  invoice);
 
-                    System.out.println(invoice.toString());
+                    System.out.println("\n" + invoice.toString());
                     break;
 
                 case 2:
                     if (invoices.isEmpty()) {
-                        System.out.println("There is no Invoices available to Update");
+                        System.out.println("\nThere is no Invoices available to Update");
                         break;
                     }
 
                     Utils.showInvoices(invoices);
 
-                    int rowNo = -1;
-                    rowNo = Utils.getValidInput(rowNo, 1, invoices.size() + 1, scanner, "Enter a Valid Invoice Number (1 - " + invoices.size() + " )") - 1;
-                    scanner.nextLine();
+                    System.out.println("\nEnter the Invoice No from the table:");
 
-                    Invoice uInvoice = invoices.get(rowNo);
+                    int invNo = 0;
+                    invNo = (int) Utils.handleIntegerInputMisMatches(invNo, scanner);
+
+                    invNo = Utils.getValidInput(invNo, invoices.firstKey(), invoices.lastKey(), scanner, "Invoice Number");
+
+                    Invoice uInvoice = invoices.get(invNo);
 
                     update(uInvoice);
 
                     break;
 
                 case 3:
-                    String customerName = "";
 
-                    customerName = Utils.getValidInput(customerName, NAME_REGEX, scanner, "Enter a Valid Customer Name (Dinesh Kumar K K): ");
+                    if (invoices.isEmpty()) {
+                        System.out.println("\nThere is no Invoices to update");
+                        break;
+                    }
 
-                    List<Invoice> invoicesForCustomer = searchByCustomer(customerName);
+                    String customerName = new CustomerUtil(scanner).getNameInput();
+
+                    TreeMap<Integer, Invoice> invoicesForCustomer = searchByCustomer(customerName);
 
                     if (invoicesForCustomer.isEmpty()) {
-                        System.out.println("No Such Customer (Or) No Invoices for this Customer ");
+                        System.out.println("\nNo Such Customer (Or) No Invoices for this Customer ");
                         break;
                     }
 
@@ -274,11 +335,19 @@ public class Main {
                     break;
 
                 case 4:
+                    if (invoices.isEmpty()) {
+                        System.out.println("\nThere is no invoices to delete");
+                        break;
+                    }
+
                     Utils.showInvoices(invoices);
 
-                    int deleteInvoiceNo = -1;
+                    System.out.println("\nEnter the Invoice No from the table:");
 
-                    deleteInvoiceNo = Utils.getValidInput(deleteInvoiceNo, 1, invoices.size() + 1, scanner, "Enter a Valid Invoice Number (1 - " + invoices.size() + " )") - 1;
+                    int deleteInvoiceNo = 0;
+                    deleteInvoiceNo = (int) Utils.handleIntegerInputMisMatches(deleteInvoiceNo, scanner);
+
+                    deleteInvoiceNo = Utils.getValidInput(deleteInvoiceNo, invoices.firstKey(), invoices.lastKey(), scanner, "Invoice Number");
 
                     if (invoiceUtils.neglectWarning(invoices.get(deleteInvoiceNo), "delete")){
                         break;
@@ -288,35 +357,40 @@ public class Main {
                     break;
 
                 case 5:
-                    System.out.println("Exiting the Invoice Module...");
+                    System.out.println("\nExiting the Invoice Module...");
                     isRunning = false;
                     break;
 
                 default:
-                    System.out.println("Enter Valid Option (1 - 5)");
+                    System.out.println("\nEnter Valid Option (1 - 5)");
                     break;
             }
         }
     }
 
     private static Invoice create() {
+        System.out.println("\nYou can add Invoice now...");
         Scanner scanner = new Scanner(System.in);
 
-        if (customers.isEmpty()) {
-            System.out.println("Since, there is no customers, you have to create Customers.");
-            char reDirectToCustomerModule = 'A';
-            reDirectToCustomerModule = Utils.getValidOption(reDirectToCustomerModule,'Y', 'N', scanner, "Do you like to Create a customer, \nYes -> Y\nNo -> N");
+        boolean isAvailableCustomer = customers.isEmpty();
 
-            if (reDirectToCustomerModule == 'Y') {
-                customerModule();
+        if (customers.isEmpty()) {
+            if (Utils.redirectVerification("Customers", scanner)) {
+                Customer customer = Customer.create(customerEmails);
+
+                customers.put(customer.getCusNo(), customer);
             } else {
                 return null;
             }
         }
 
+        if (isAvailableCustomer) {
+            System.out.println("\nCustomer has been created and now can create Invoice\n");
+        }
+
         Utils.showCustomers(customers);
 
-        int cusNo = invoiceUtils.getCustomerInput(1, customers.size() + 1);
+        int cusNo = invoiceUtils.getCustomerInput(customers.firstKey(), customers.lastKey());
 
         Customer cus = customers.get(cusNo);
 
@@ -326,19 +400,18 @@ public class Main {
 
         Invoice invoice = new Invoice(cus, date, paymentTerm);
 
-        Map<Item, Integer> itemTable = new HashMap<>();
+        Map<Item, Integer> itemTable = new TreeMap<>((item1, item2) -> Integer.compare(item1.getItemNo(), item2.getItemNo()));
         itemTableOperations(invoice, itemTable);
         invoice.setItemTable(itemTable);
 
         double subTotal = invoice.getSubTotal();
 
-        double discount = invoiceUtils.getDiscountInput();
+        double discount = invoiceUtils.getDiscountInput(true);
         invoice.setDiscount(discount);
 
         double invTotal = subTotal - ((subTotal / 100) * discount);
 
-        double shippingCharges = invoiceUtils.getShippingCharges();
-        System.out.println("Main");
+        double shippingCharges = invoiceUtils.getShippingCharges(true);
         invoice.setShippingCharges(shippingCharges);
 
         invTotal += shippingCharges;
@@ -356,17 +429,24 @@ public class Main {
         }
 
         while (isUpdating) {
-            System.out.println("Option 1 -> (Item Table, Payment Term, Customer) Modifications");
+            System.out.println("\nOption 1 -> (Item Table, Payment Term, Customer) Modifications");
             System.out.println("Option 2 -> (Discount, Shipping Charges, status) Modifications");
             System.out.println("Option 3 -> Exit the Update Module");
 
-            int option = scanner.nextInt();
-            scanner.nextLine();
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
                 case 1:
+                    if (invoiceUtils.neglectWarning(invoice, "update")) {
+                        return;
+                    }
                     modifyInvoicePrimaryDetails(invoice);
                     break;
                 case 2:
+                    if (invoiceUtils.neglectWarning(invoice, "update")) {
+                        return;
+                    }
                     modifyInvoiceOtherCharges(invoice);
                     break;
                 case 3:
@@ -383,40 +463,65 @@ public class Main {
     private static void modifyInvoicePrimaryDetails(Invoice invoice) {
         boolean isUpdating = true;
         while (isUpdating) {
-            System.out.println("Option 1 -> Update Item Table");
+            System.out.println("\nOption 1 -> Update Item Table");
             System.out.println("Option 2 -> Update Payment Term");
             System.out.println("Option 3 -> Update Customer");
             System.out.println("Option 4 -> Exit the Invoice Primary Details Modification Module");
 
-            int option = scanner.nextInt();
-            scanner.nextLine();
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
                 case 1:
+                    if (invoiceUtils.neglectWarning(invoice, "update")) {
+                        return;
+                    }
+                    Map<Item, Integer> previousItemTable = invoice.getItemTable();
+
                     itemTableOperations(invoice, invoice.getItemTable());
+
+                    System.out.println("\nPrevious Item Table\n");
+                    showItemDetails(previousItemTable);
+
+                    System.out.println("\nUpdate Item Table\n");
+                    showItemDetails(invoice.getItemTable());
 
                     break;
                 case 2:
+                    if (invoiceUtils.neglectWarning(invoice, "update")) {
+                        return;
+                    }
+                    int previousPaymentTerm = invoice.getPaymentTerm();
+
                     int paymentTerm = invoiceUtils.getPaymentTermInput();
 
                     invoice.setPaymentTerm(paymentTerm);
 
+                    System.out.println("\nInvoice's Payment Term updated from " + previousPaymentTerm + " to " + paymentTerm );
                     break;
                 case 3:
+                    if (invoiceUtils.neglectWarning(invoice, "update")) {
+                        return;
+                    }
+                    String previousCustomerName = invoice.getCustomer().getName();
+
                     Utils.showCustomers(customers);
 
-                    int cusNo = invoiceUtils.getCustomerInput(1, customers.size());
+                    int cusNo = invoiceUtils.getCustomerInput(customers.firstKey(), customers.lastKey());
 
                     invoice.setCustomer(customers.get(cusNo));
 
+                    System.out.println("\nInvoice's Customer updated from " + previousCustomerName + " to " + customers.get(cusNo).getName() );
+
                     break;
                 case 4:
-                    System.out.println("Exiting the Invoice modification module");
+                    System.out.println("\nExiting the Invoice modification module");
 
                     isUpdating = false;
 
                     break;
                 default:
-                    System.out.println("Enter a Valid input (1 - 4)");
+                    System.out.println("\nEnter a Valid input (1 - 4)");
                     break;
             }
         }
@@ -425,48 +530,71 @@ public class Main {
     private static void modifyInvoiceOtherCharges(Invoice invoice) {
         boolean isUpdating = true;
         while (isUpdating) {
-            System.out.println("Option 1 -> Update Discount");
+            System.out.println("\nOption 1 -> Update Discount");
             System.out.println("Option 2 -> Update Shipping Charges");
             System.out.println("Option 3 -> Update Status");
             System.out.println("Option 4 -> Exit the Invoice Other Charges Module");
 
-            int option = scanner.nextInt();
-            scanner.nextLine();
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
             switch (option) {
                 case 1:
+                    if (invoiceUtils.neglectWarning(invoice, "update")) {
+                        return;
+                    }
                     double previousDiscount = invoice.getDiscount();
 
-                    double nDiscount = invoiceUtils.getDiscountInput();
+                    double nDiscount = invoiceUtils.getDiscountInput(false);
 
                     invoice.setDiscount(nDiscount);
 
                     invoice.setTotal(invoice.getTotal() + ((invoice.getSubTotal() / 100) * previousDiscount) - ((invoice.getSubTotal() / 100) * nDiscount));
+
+                    System.out.println("\nInvoice's Discount updated from " + previousDiscount + " to " + nDiscount );
+
                     break;
                 case 2:
+                    if (invoiceUtils.neglectWarning(invoice, "update")) {
+                        return;
+                    }
 
                     double previousShippingCharges = invoice.getShippingCharges();
 
-                    double shippingCharges = invoiceUtils.getShippingCharges();
+                    double shippingCharges = invoiceUtils.getShippingCharges(false);
 
                     invoice.setShippingCharges(shippingCharges);
 
                     invoice.setTotal(invoice.getTotal() - previousShippingCharges + shippingCharges);
 
+                    System.out.println("\nInvoice's Shipping Charges updated from " + previousShippingCharges + " to " + shippingCharges );
+
                     break;
                 case 3:
-                    int status = -1;
+                    if (invoiceUtils.neglectWarning(invoice, "update")) {
+                        return;
+                    }
+                    String previousStatus = invoice.getStatus();
 
-                    status = Utils.getValidInput(status, 1, Utils.invoiceStatus.size(), scanner, Utils.showStatuses()) - 1;
+                    System.out.println("\nEnter the Status No:\n");
+                    System.out.println(Utils.showStatuses());
+
+                    int status = 0;
+                    status = (int) Utils.handleIntegerInputMisMatches(status, scanner);
+
+                    status = Utils.getValidInput(status, 1, Utils.invoiceStatus.size(), scanner, "Invoice Status") - 1;
 
                     invoice.setStatus(status);
 
+                    System.out.println("\nInvoice's Status updated from " + previousStatus + " to " + invoice.getStatus() );
+
                     break;
                 case 4:
-                    System.out.println("Exiting the Invoice modification module");
+                    System.out.println("\nExiting the Invoice modification module");
                     isUpdating = false;
                     break;
                 default:
-                    System.out.println("Enter a Valid input (1 - 4)");
+                    System.out.println("\nEnter a Valid input (1 - 4)");
                     break;
             }
         }
@@ -477,25 +605,26 @@ public class Main {
         boolean isPurchasing = true;
         while (isPurchasing) {
 
-            System.out.println("Option 1 -> Add Items to the list");
+            System.out.println("\nOption 1 -> Add Items to the list");
             if (!itemTable.isEmpty()) {
                 System.out.println("Option 2 -> Remove Items from the list");
             } else {
                 System.out.println("Option 2 is disabled, No items added yet...");
             }
             System.out.println("Option 3 -> Quit");
-            int purchaseOption = scanner.nextInt();
-            scanner.nextLine();
 
-            switch (purchaseOption) {
+            System.out.println("\nEnter the Option: ");
+
+            int option = -1;
+            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+
+            switch (option) {
                 case 1:
                     if (items.isEmpty()) {
-                        System.out.println("Since, there is no items, you have to create Items.");
-                        char reDirectToItemsModule = 'A';
-                        reDirectToItemsModule = Utils.getValidOption(reDirectToItemsModule,'Y', 'N', scanner, "Do you like to Create an item, \nYes -> Y\nNo -> N");
+                        if (Utils.redirectVerification("Items", scanner)) {
+                            Item item = Item.create();
 
-                        if (reDirectToItemsModule == 'Y') {
-                            itemModule();
+                            items.put(item.getItemNo(), item);
                         } else {
                             break;
                         }
@@ -503,16 +632,20 @@ public class Main {
 
                     Utils.showItems(items);
 
-                    int itemNo = -1;
+                    System.out.println("\nEnter the Item No from the table: ");
 
-                    itemNo = Utils.getValidInput(itemNo, 1, items.size(), scanner, "Enter the Item No (Eg. 1 -  " + items.size() + "):") - 1;
+                    int itemNo = 0;
+                    itemNo = (int) Utils.handleIntegerInputMisMatches(itemNo, scanner);
+
+                    itemNo = Utils.getValidInput(itemNo, items.firstKey(), items.lastKey(), scanner, "Item Number:");
 
 
-                    int quantity = -1;
+                    System.out.println("\nEnter the quantity: ");
 
-                    quantity = Utils.getValidInput(quantity, 1, (int) 1e9, scanner, "Enter the Quantity (No -ve Integers allowed): ");
+                    int quantity = 0;
+                    quantity = (int) Utils.handleIntegerInputMisMatches(quantity, scanner);
 
-                    scanner.nextLine();
+                    quantity = Utils.getValidInput(quantity, 1, 100, scanner, items.get(itemNo).getItemName() + "'s Quantity: ");
 
                     itemTable.put(items.get(itemNo), itemTable.getOrDefault(items.get(itemNo), 0) + quantity);
                     break;
@@ -521,38 +654,69 @@ public class Main {
 
                         showItemDetails(itemTable);
 
-                        int removalItemNo = -1;
-                        removalItemNo = Utils.getValidInput(removalItemNo, 1, itemTable.size(), scanner, "Select the Item No to remove (Eg. 1 - " + itemTable.size() + ")") - 1;
+                        System.out.println("\nEnter the Item No from the Table: ");
+
+                        int removalItemNo = 0;
+                        removalItemNo = (int) Utils.handleIntegerInputMisMatches(removalItemNo, scanner);
+
+                        removalItemNo = Utils.getValidInput(removalItemNo, 1, itemTable.size(), scanner, "Item Number:");
 
                         Item item = items.get(removalItemNo);
 
+                        System.out.println("\nOption 1 -> Remove the Entire Item");
+                        System.out.println("Option 2 -> Remove Partial Items");
+                        System.out.println("Option 3 -> Quit");
+
                         int removeOption = 0;
-                        removeOption = Utils.getValidInput(removeOption, 1, 3, scanner, "Option 1 -> Remove the Entire items from the table\n Option 2 -> Remove partial items");
+                        removeOption = (int) Utils.handleIntegerInputMisMatches(removeOption, scanner);
+
+                        removeOption = Utils.getValidInput(removeOption, 1, 3, scanner, "Item Remove Option");
 
                         if (removeOption == 1) {
-                            System.out.println("Enter the Item no, you want to remove: ");
+
                             itemTable.remove(item);
-                        } else {
-                            System.out.println("Enter the Item no, you want to partially remove: ");
-                            int removalQuantity = itemTable.get(item) + 1;
+
+                        } else if (removeOption == 2) {
+                            System.out.println("\nItem Quantity: " + itemTable.get(item));
+
+                            System.out.println("\nEnter the removal Quantity less the above mentioned Quantity: ");
+
+                            int removalQuantity = 0;
+                            removalQuantity = (int) Utils.handleIntegerInputMisMatches(removalQuantity, scanner);
+
                             while (removalQuantity > itemTable.get(item
                             )) {
-                                System.out.println("Enter the appropriate quantity that you want remove");
-                                removalQuantity = scanner.nextInt();
+                                System.out.println("\nItem Quantity: " + itemTable.get(item));
+
+                                System.out.println("\nEnter the appropriate quantity,  that should less than the actual quantity");
+
+                                removalQuantity = (int) Utils.handleIntegerInputMisMatches(removalQuantity, scanner);
+
+                                if (removalQuantity < 0) {
+                                    removalQuantity *= -1;
+                                }
                             }
+
+                            if (removalQuantity < 0) {
+                                removalQuantity *= -1;
+                            }
+
                             itemTable.put(item, itemTable.get(item) - removalQuantity);
+
+                        } else {
+                            System.out.println("\nItem Table Updation");
+                            break;
                         }
-                        scanner.nextLine();
                     } else {
-                        System.out.println("No items added yet");
+                        System.out.println("\nNo items added yet");
                     }
                     break;
                 case 3:
                     isPurchasing = false;
-                    System.out.println("Exiting the purchasing...");
+                    System.out.println("\nExiting the purchasing...");
                     break;
                 default:
-                    System.out.println("Enter a valid option (1 - 3)");
+                    System.out.println("\nEnter a valid option (1 - 3)");
                     break;
             }
         }
@@ -561,12 +725,7 @@ public class Main {
 
         double subTotal = 0;
 
-        char stateOption = 'A';
-
-        stateOption = Utils.getValidOption(stateOption, 'Y', 'N',
-                scanner, "Is this transaction within the state, if Yes -> Y, No -> N");
-
-        boolean withinState = stateOption == 'Y';
+        boolean withinState = invoice.getCustomer().getAddress().getState().equalsIgnoreCase("Tamil Nadu");
 
         for (Item cartItem : itemTable.keySet()) {
             double cost = cartItem.getRate(itemTable.get(cartItem), withinState);
@@ -576,11 +735,12 @@ public class Main {
         invoice.setSubTotal(subTotal);
     }
 
-    private static List<Invoice> searchByCustomer (String customerName) {
-        List<Invoice> invoicesOfCustomer = new ArrayList<>();
-        for (Invoice inv : invoices) {
+    private static TreeMap<Integer, Invoice> searchByCustomer (String customerName) {
+        TreeMap<Integer, Invoice> invoicesOfCustomer = new TreeMap<>();
+        for (Integer invNo : invoices.keySet()) {
+            Invoice inv = invoices.get(invNo);
             if (inv.getCustomer().getName().equalsIgnoreCase(customerName)) {
-                invoicesOfCustomer.add(inv);
+                invoicesOfCustomer.put(invNo, inv);
             }
         }
         return invoicesOfCustomer;
@@ -592,10 +752,9 @@ public class Main {
                 "Item No", "Item Name", "Item Quantity");
         System.out.println("-".repeat(45));
 
-        int count = 0;
         for (Item cartItem : itemTable.keySet()) {
             System.out.printf("| %-10d | %-25s | %-15s |%n",
-                    ++count,
+                    cartItem.getItemNo(),
                     cartItem.getItemName(),
                     itemTable.get(cartItem));
         }
