@@ -1,53 +1,35 @@
 package invoice.utils;
 
+import invoice.GlobalConstants;
 import invoice.src.Invoice;
 
+import java.util.List;
 import java.util.Scanner;
 
-public class InvoiceUtil {
+public class InvoiceUtil
+{
     private final Scanner scanner;
 
-    public InvoiceUtil(Scanner scanner) {
+    public InvoiceUtil(Scanner scanner)
+    {
         this.scanner = scanner;
     }
 
-    public int getCustomerInput (int lowerLimit, int upperLimit) {
-        System.out.println("\nEnter the Customer Number from the Table: ");
+    public int getSerialNumberInput (int lowerLimit, int upperLimit, String fieldName) {
 
-        int cusNo = 0;
-        cusNo = (int) Utils.handleIntegerInputMisMatches(cusNo, scanner);
-
-        cusNo = Utils.getValidInput(cusNo, lowerLimit, upperLimit, scanner, "Customer Number");
-
-        return cusNo;
+        return Utils.getValidRange( lowerLimit, upperLimit, scanner, fieldName+ " Number", "Enter the " + fieldName + " Number from the table: ");
     }
 
-    public int getPaymentTermInput () {
-        System.out.println("\nEnter the Payment Term: ");
-
-        int paymentTerm = -1;
-        paymentTerm = (int) Utils.handleIntegerInputMisMatches(paymentTerm, scanner);
-
-        paymentTerm = (int) Utils.getValidInput(paymentTerm, 0.1, 90, scanner, "Invoice's Payment Term");
-
-        return paymentTerm;
+    public int getPaymentTermInput ()
+    {
+        return Utils.getValidRange( 0, 90, scanner, "Invoice's Payment Term", "Enter the Payment Term (Eg. 15, 30, 45, 90): ");
     }
 
     public double getDiscountInput (boolean isCreation) {
-        double discount = -1;
+        double discount = 0;
         if (isCreation){
-            char discountOption = 'A';
-
-            System.out.println("\nWant to Enter discount\nY -> Yes\nN -> No");
-
-            discountOption = Utils.handleOptionStringOutOfBoundError(scanner, discountOption, "Discount Option");
-
-            discountOption = Character.toUpperCase(discountOption);
-
-            String[][] availableOptions = { {"Y", "Yes"}, {"N", "No"} };
-
-            discountOption = Utils.getValidOption(discountOption, 'Y', 'N', scanner, "Discount Option", availableOptions);
-            if (discountOption == 'Y') {
+            char yesOrNo = Utils.getValidOption(GlobalConstants.YES_NO_OPTIONS, scanner, "Discount Option", "Want to Enter discount\nY -> Yes\nN -> No");
+            if (yesOrNo == 'Y' || yesOrNo == 'y') {
                 discount = getDoubleInput(100, "Discount");
             }
         } else {
@@ -59,21 +41,10 @@ public class InvoiceUtil {
     public double getShippingCharges (boolean isCreation) {
         double shippingCharges = 0;
 
-        char shippingChargeOption = 'A';
-
         if (isCreation) {
+            char yesOrNo = Utils.getValidOption(GlobalConstants.YES_NO_OPTIONS, scanner, "Shipping Charges Option", "Want to Enter the Shipping Charges\nY -> Yes\nN -> No");
 
-            System.out.println("\nWant to Enter the Shipping Charges\nY -> Yes\nN -> No");
-
-            shippingChargeOption = Utils.handleOptionStringOutOfBoundError(scanner, shippingChargeOption, "Shipping Charges Option");
-
-            shippingChargeOption = Character.toUpperCase(shippingChargeOption);
-
-            String[][] availableOptions = { {"Y", "Yes"}, {"N", "No"} };
-
-            shippingChargeOption = Utils.getValidOption(shippingChargeOption, 'Y', 'N', scanner, "Shipping Charges Option", availableOptions);
-
-            if (shippingChargeOption == 'Y') {
+            if (yesOrNo == 'Y'|| yesOrNo == 'y') {
                 shippingCharges = getDoubleInput(Integer.MAX_VALUE, "Shipping Charges");
             }
         } else {
@@ -83,36 +54,53 @@ public class InvoiceUtil {
         return shippingCharges;
     }
 
-    private double getDoubleInput (int upperLimit, String fieldName) {
-        System.out.println("\nEnter the " + fieldName + ":");
+   public double haveReceivedPayment (double dueAmount)
+   {
+        char yesOrNo = Utils.getValidOption(GlobalConstants.YES_NO_OPTIONS, scanner, "Shipping Charges Option", "Have you received payment\nY -> yes\nN -> No");
 
-        double fieldValue = -1;
-        fieldValue = Utils.handleIntegerInputMisMatches(fieldValue, scanner);
+        double paidAmount = 0;
 
-        fieldValue = Utils.getValidInput(fieldValue, 0, upperLimit, scanner, fieldName);
+        if (yesOrNo == 'Y' || yesOrNo == 'y') {
 
-        return fieldValue;
+            paidAmount = getPaymentInput(dueAmount);
+
+        }
+
+        return paidAmount;
+    }
+
+    public double getPaymentInput (double dueAmount) {
+        System.out.println("Enter the amount (Max Limit: " + dueAmount + " ):");
+
+        return Utils.getValidDoubleInput( 0, scanner, "Amount", "\nEnter the amount:");
+
+    }
+
+    public void reArrangeInvoiceList (List<Invoice> invoices) {
+
+        for (int i = 0; i < invoices.size(); i++) {
+            Invoice invoice = invoices.get(i);
+            if (i + 1 != invoice.getInvNo()) {
+                invoice.setInvNo(i + 1);
+            }
+        }
+    }
+
+    private double getDoubleInput (int upperLimit, String fieldName)
+    {
+        return Utils.getValidDoubleInput( 0, scanner, fieldName, "Enter the " + fieldName + ":");
     }
 
 
-    public boolean neglectWarning (Invoice invoice, String type) {
+    public boolean neglectWarning (Invoice invoice, String module)
+    {
         if (invoice.getStatus().equals("CLOSED") || invoice.getStatus().equals("PARTIALLY_PAID")) {
-            System.out.println("\nSince, invoice is closed or partially paid, it's not recommended to " + type + "...");
+            System.out.println("\nSince, invoice is closed or partially paid, it's not recommended to " + module + "...");
 
-            System.out.println("\nStill you want to delete\nY -> Yes\nN -> No");
+            char yesOrNo = Utils.getValidOption( GlobalConstants.YES_NO_OPTIONS, scanner, "Invoice updation option",  "Still you want to \" + module + \"\\nY -> Yes\\nN -> No");
 
-            char updationOption = 'A';
-
-            updationOption = Utils.handleOptionStringOutOfBoundError(scanner, updationOption,"Invoice Updation Option");
-
-            updationOption = Character.toUpperCase(updationOption);
-
-            String[][] availableOptions = { {"Y", "Yes"}, {"N", "No"} };
-
-            updationOption = Utils.getValidOption(updationOption, 'Y', 'N', scanner, "Invoice updation option", availableOptions);
-
-            if (updationOption == 'N') {
-                System.out.println("\nNo " + type + " has been done");
+            if (yesOrNo == 'N' || yesOrNo == 'n') {
+                System.out.println("\nNo " + module + " has been done");
                 return true;
             }
 

@@ -1,22 +1,19 @@
 package invoice.src;
 
+import invoice.GlobalConstants;
 import invoice.utils.Utils;
 
 import java.util.Scanner;
 
 public class Address {
-
-    // Constants
-    private static final String NAME_REGEX = "[a-zA-Z\\s]{5,}";
-    private static final String STREET_REGEX = "^([a-zA-Z][a-zA-Z0-9-\\s,]{6,})|^([0-9]+[a-zA-Z0-9,\\/\\s.]{6,})";
-    private static final String PIN_CODE_REGEX = "\\d{6}";
-
     // Primary Details
     private String country;
     private String state;
     private String city;
     private String street;
     private String pinCode;
+    private static final String STREET_REGEX = "^([a-zA-Z][a-zA-Z0-9-\\s,]{6,})|^([0-9]+[a-zA-Z0-9,\\/\\s.]{6,})";
+    private static final String PIN_CODE_REGEX = "\\d{6}";
 
     public Address (String country, String state, String city, String street, String pinCode) {
         this.country = country;
@@ -26,26 +23,22 @@ public class Address {
         this.pinCode = pinCode;
     }
 
-    public static Address create () {
-        Scanner scanner = new Scanner(System.in);
+    public static Address create (Scanner scanner) {
+        String country = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "India", "Country", "Enter the Country:");
 
-        String country = Utils.getAddressFieldInput(NAME_REGEX, scanner, "India", "Country");
+        String state = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Tamil Nadu", "State", "Enter the State:");
 
-        String state = Utils.getAddressFieldInput(NAME_REGEX, scanner, "Tamil Nadu", "State");
+        String city = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner,"Madurai", "City", "Enter the City:");
 
-        String city = Utils.getAddressFieldInput(NAME_REGEX, scanner,"Madurai", "City");
+        String street = Utils.getValidStringInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street", "Enter the Street:");
 
-        String street = Utils.getAddressFieldInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street");
-
-        String pinCode = Utils.getAddressFieldInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code");
+        String pinCode = Utils.getValidStringInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code", "Enter the Pin Code:");
 
         return new Address(country, state, city, street, pinCode);
     }
 
-    public void update () {
-        boolean isUpdating = true;
-        Scanner scanner = new Scanner(System.in);
-        while (isUpdating) {
+    public void update (Scanner scanner) {
+        while (true) {
             System.out.println("\nOption 1 -> Updating Country");
             System.out.println("Option 2 -> Updating State");
             System.out.println("Option 3 -> Updating City");
@@ -55,59 +48,65 @@ public class Address {
 
             System.out.println("\nEnter the Option: ");
             int option = -1;
-            option = (int) Utils.handleIntegerInputMisMatches(option, scanner);
+            option = Utils.handleIntegerInputMisMatches(option, -1, scanner);
+
+            if (option == 6) {
+                System.out.println("\nExiting the Customer Module...");
+                break;
+            }
 
             switch (option) {
                 case 1:
                     String previousCountry = this.country;
 
-                    String nCountry = Utils.getAddressFieldInput(NAME_REGEX, scanner, "India", "Country");
+                    String nCountry = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "India", "Country", "Enter the Country:");
 
                     this.setCountry(nCountry);
 
                     System.out.println("\nCustomer's Country updated from " + previousCountry + " to " + nCountry);
                     break;
+
                 case 2:
                     String previousState = this.state;
 
-                    String nState = Utils.getAddressFieldInput(NAME_REGEX, scanner, "Tamil Nadu", "State");
+                    String nState = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Tamil Nadu", "State", "Enter the State:");
 
                     this.setState(nState);
-
                     System.out.println("Customer's State updated from " + previousState + " to " + nState);
                     break;
+
                 case 3:
                     String previousCity = this.city;
 
-                    String nCity = Utils.getAddressFieldInput(NAME_REGEX, scanner,"Madurai", "City");
+                    String nCity = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner,"Madurai", "City", "Enter the City:");
 
                     this.setCity(nCity);
 
                     System.out.println("\nCustomer's City updated from " + previousCity + " to " + nCity);
                     break;
+
                 case 4:
                     String previousStreet = this.street;
 
-                    String nStreet = Utils.getAddressFieldInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street");
+                    String nStreet = Utils.getValidStringInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street", "Enter the Street:");
 
                     this.setStreet(nStreet);
 
                     System.out.println("\nCustomer's Street updated from " + previousStreet + " to " + nStreet);
                     break;
+
                 case 5:
                     String previousPinCode = this.pinCode;
 
-                    String nPinCode = Utils.getAddressFieldInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code");
+                    String nPinCode = Utils.getValidStringInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code", "Enter the Pin Code");
 
                     this.setPinCode(nPinCode);
 
                     System.out.println("\nCustomer's Pin Code updated from " + previousPinCode + " to " + nPinCode);
                     break;
-                case 6:
-                    System.out.println("\nSuccessfully updated, exiting...");
-                    isUpdating = false;
-                    break;
+
                 default:
+                    System.out.println("Enter a Valid Input (1 - 6)");
                     break;
             }
         }

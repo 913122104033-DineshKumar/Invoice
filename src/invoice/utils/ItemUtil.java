@@ -1,138 +1,109 @@
 package invoice.utils;
 
-import java.util.Scanner;
+import invoice.GlobalConstants;
+import invoice.src.Item;
 
-public class ItemUtil {
+import java.util.*;
 
-    private static final String NAME_REGEX = "[a-zA-Z\\s]+";
+public class ItemUtil
+{
     private final Scanner scanner;
+    private final Set<Character> ITEM_TYPES;
+    private final Set<Character> ITEM_UNITS;
 
-    public ItemUtil (Scanner scanner) {
+    public ItemUtil (Scanner scanner)
+    {
         this.scanner = scanner;
+        this.ITEM_TYPES = new HashSet<>();
+        this.ITEM_TYPES.addAll(Arrays.asList('G', 'S', 'g', 's'));
+        this.ITEM_UNITS = new HashSet<>();
+        this.ITEM_UNITS.addAll(Arrays.asList('P', 'M', 'B', 'N', 'p', 'm', 'b', 'n'));
     }
 
-    public String getItemTypeInput () {
-        char itemTypeOption = 'A';
-
-        System.out.println("\nEnter a Item Type (G,g  -> Goods, S, s -> Services):");
-
-        String[][] availableOptions = { {"G", "GOODS"}, {"S", "SERVICES"} };
-
-        itemTypeOption = Utils.handleOptionStringOutOfBoundError(scanner, itemTypeOption, "Item Type Option");
-
-        itemTypeOption = Character.toUpperCase(itemTypeOption);
-
-        itemTypeOption = Utils.getValidOption(itemTypeOption, 'G', 'S',
-                scanner, "Item Type Option", availableOptions);
-        return itemTypeOption == 'G' ? "GOODS" : "SERVICES";
+    public Character getItemTypeInput ()
+    {
+        return Utils.getValidOption( ITEM_TYPES,
+                scanner, "Item Type Option", "Enter a Item Type (G,g  -> Goods, S, s -> Services):");
     }
 
-    public String getItemUnitInput () {
-        System.out.println("\nEnter a Valid input (Pieces -> P, Meters -> M, Box -> B, Undefined -> N): ");
-        char itemUnitOption = '\0';
-        String[][] availableOptions = { { "P", "PIECES" }, { "B", "BOX" }, { "M", "METERS" }, { "N", "NONE" } };
+    public Character getItemUnitInput ()
+    {
+        return Utils.getValidOption(ITEM_UNITS, scanner, "Item Unit Option", "Enter a Valid input (Pieces -> P, Meters -> M, Box -> B, Undefined -> N):");
+    }
 
-        itemUnitOption = Utils.handleOptionStringOutOfBoundError(scanner, itemUnitOption, "Item Unit Option");
+    public String getItemNameInput ()
+    {
+        return Utils.getValidStringInput( GlobalConstants.NAME_REGEX, scanner, "Eg. Punam Saree", "Item Name", "Enter the Item Name: ");
+    }
 
-        itemUnitOption = Character.toUpperCase(itemUnitOption);
+    public double[] getTaxableInput (boolean isCreation, boolean previousIsTaxable)
+    {
+        int isTaxable = 0;
+        double intraTaxRate, interTaxRate;
+        char yesOrNo;
 
-        while (itemUnitOption != 'P' && itemUnitOption != 'B' && itemUnitOption != 'M' && itemUnitOption != 'N' && itemUnitOption != 'p' && itemUnitOption != 'b' && itemUnitOption != 'm' && itemUnitOption != 'n') {
-            System.out.println("\n" + ErrorUtils.optionError("Item Unit Option", availableOptions));
-            itemUnitOption = Utils.handleOptionStringOutOfBoundError(scanner, itemUnitOption, "Item Unit Option");
-            itemUnitOption = Character.toUpperCase(itemUnitOption);
+        if (isCreation)
+        {
+            yesOrNo = Utils.getValidOption(GlobalConstants.YES_NO_OPTIONS,
+                    scanner, "Tax Option","Is Taxable applied\nY -> Yes\nN -> No");
+        } else
+        {
+            if (previousIsTaxable) {
+                yesOrNo = 'N';
+            } else {
+                yesOrNo = 'Y';
+            }
         }
-        return switch (itemUnitOption) {
-            case 'P' -> "PIECES";
-            case 'B' -> "BOX";
-            case 'M' -> "METERS";
-            default -> "NONE";
-        };
-    }
 
-    public String getItemNameInput () {
-        String itemName = "";
 
-        System.out.println("\nEnter the Item Name: ");
-        itemName = scanner.nextLine();
-
-        itemName = Utils.getValidInput(itemName, NAME_REGEX, scanner, "Eg. Punam Saree", "Item Name");
-        return itemName;
-    }
-
-    public double[] getTaxableInput () {
-        double isTaxable = 0, intraTaxRate = -1, interTaxRate = -1;
-        char taxableOption = 'A';
-
-        System.out.println("\nIs Taxable applied\nY -> Yes\nN -> No");
-        taxableOption = Utils.handleOptionStringOutOfBoundError(scanner, taxableOption, "Taxable Option");
-
-        taxableOption = Character.toUpperCase(taxableOption);
-
-        String[][] availableOptions = { {"Y", "Yes"}, {"N", "No"} };
-
-        taxableOption = Utils.getValidOption(taxableOption, 'Y', 'N',
-                scanner, "Tax Option", availableOptions);
-        if (taxableOption == 'Y') {
+        if (yesOrNo == 'Y' || yesOrNo == 'y') {
             isTaxable = 1;
 
-            System.out.println("Enter the Intra Tax Rate: ");
-            intraTaxRate = Utils.handleIntegerInputMisMatches(intraTaxRate, scanner);
+            intraTaxRate = Utils.getValidDoubleInput( 0,  scanner, "Intra Tax Rate", "Enter the Intra Tax Rate:");
 
-            intraTaxRate = Utils.getValidInput(intraTaxRate, 0.1, 28, scanner, "Intra Tax Rate");
-
-            System.out.println("Enter the Inter Tax Rate: ");
-            interTaxRate = Utils.handleIntegerInputMisMatches(interTaxRate, scanner);
-
-            interTaxRate = Utils.getValidInput(interTaxRate, 0.1, 28, scanner, "Inter Tax Rate");
+            interTaxRate = Utils.getValidDoubleInput( 0, scanner, "Inter Tax Rate", "Enter the Inter Tax Rate: ");
         } else {
             intraTaxRate = 0;
             interTaxRate = 0;
         }
-        return new double[]{ isTaxable, intraTaxRate, interTaxRate };
+
+        return new double[] { isTaxable, intraTaxRate, interTaxRate };
+        
     }
 
     public double getPriceInput () {
 
-        System.out.println("\nEnter the Item Selling Price: ");
+        System.out.println("\nEnter the Item Selling Price ");
 
-        double price = -1;
-        price = Utils.handleIntegerInputMisMatches(price, scanner);
-
-        price = Utils.getValidInput(price, 0.1, Integer.MAX_VALUE, scanner, "Selling Price");
-
-        return price;
+        return Utils.getValidDoubleInput( 0, scanner, "Selling Price", "Enter the Item Selling Price:");
     }
 
     public String getDescription (boolean isCreation) {
         String description = "";
         if (isCreation) {
-            char descriptionOption = 'A';
+            char yesOrNo = Utils.getValidOption( GlobalConstants.YES_NO_OPTIONS,
+                    scanner, "Description", "Want to Write Description\nY -> Yes\nN -> No");
 
-            System.out.println("\nWant to Write Description\nY -> Yes\nN -> No");
-            descriptionOption = Utils.handleOptionStringOutOfBoundError(scanner, descriptionOption, "Description Option");
+            if (yesOrNo == 'Y' || yesOrNo == 'y') {
 
-            descriptionOption = Character.toUpperCase(descriptionOption);
-
-            String[][] availableOptions = { {"Y", "Yes"}, {"N", "No"} };
-
-            descriptionOption = Utils.getValidOption(descriptionOption, 'Y', 'N',
-                    scanner, "Description", availableOptions);
-
-            if (descriptionOption == 'Y') {
-
-                System.out.println("\nEnter the Description: ");
-                description = scanner.nextLine();
-
-                description = Utils.getValidInput(description, NAME_REGEX, scanner, "Nice Saree", "Item Description");
+                description = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Nice Saree", "Item Description", "Enter the Description:");
             }
         } else {
-            System.out.println("\nEnter the Description: ");
-            description = scanner.nextLine();
 
-            description = Utils.getValidInput(description, NAME_REGEX, scanner, "Nice Saree", "Item Description");
+            description = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Nice Saree", "Item Description", "Enter the Description:");
         }
 
         return description;
+    }
+
+    public static void reArrangeItemList (List<Item> items) {
+
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            if (i + 1 != item.getItemNo()) {
+                item.setItemNo(i + 1);
+            }
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package invoice.utils;
 
+import invoice.GlobalConstants;
 import invoice.src.Customer;
 import invoice.src.Invoice;
 import invoice.src.Item;
@@ -8,218 +9,157 @@ import java.util.*;
 
 public class Utils {
 
-    private static int noOfLines;
-    public static Map<Character, String> itemTypes;
-    public static Map<Character, String> itemUnits;
-    public static Map<Character, String> customerTypes;
-    public static List<String> invoiceStatus;
-
-    // Initialization
-    public static void initialize () {
-        noOfLines = 75;
-        itemTypes = Map.of(
-                'G', "Goods",
-                'S', "Services"
-        );
-        itemUnits = Map.of(
-                'P', "Pieces",
-                'M', "Meters",
-                'B', "Box",
-                'N', "Undefined"
-        );
-        customerTypes = Map.of(
-                'B', "Business",
-                'I', "Individual"
-        );
-        invoiceStatus = Arrays.asList("DRAFT", "SENT", "PARTIALLY_PAID", "CLOSED");
+    public static void printLines (int repeatTime) {
+        System.out.println("-".repeat(repeatTime));
     }
 
-    // Printing the Outputs
-    public static void showItems (TreeMap<Integer, Item> items) {
-        System.out.println("-".repeat(noOfLines));
+    public static void showItems(List<Item> items) {
+        System.out.println("-".repeat(58));
+
+        // Print header
         System.out.printf("| %-10s | %-25s | %-15s |%n",
                 "Item No", "Item Name", "Price");
-        System.out.println("-".repeat(noOfLines));
 
-        for (Integer itemNo : items.keySet()) {
-            Item item = items.get(itemNo);
+        System.out.println("-".repeat(58));
+
+        // Print item data
+        for (int serialNo = 0; serialNo <  items.size(); serialNo++) {
+            Item item = items.get(serialNo);
             System.out.printf("| %-10d | %-25s | %-15s |%n",
-                    (itemNo),
+                    serialNo + 1,
                     item.getItemName(),
-                    item.getPrice());
+                    String.format("Rs.%.2f", item.getPrice()));
         }
-        System.out.println("-".repeat(noOfLines));
+
+        System.out.println("-".repeat(58));
     }
 
-    public static void showCustomers (TreeMap<Integer, Customer> customers) {
-        System.out.println("-".repeat(noOfLines));
+    public static void showCustomers(List<Customer> customers) {
+        System.out.println("-".repeat(58));
+
+        // Print header
         System.out.printf("| %-10s | %-25s | %-15s |%n",
                 "Customer No", "Customer Name", "Customer Email");
-        System.out.println("-".repeat(noOfLines));
 
-        for (Integer cusNo : customers.keySet()) {
-            Customer customer = customers.get(cusNo);
+        System.out.println("-".repeat(58));
+
+        // Print customer data
+        for (int serialNo = 0; serialNo < customers.size(); serialNo++) {
+            Customer customer = customers.get(serialNo);
             System.out.printf("| %-10d | %-25s | %-15s |%n",
-                    (cusNo),
+                    serialNo + 1,
                     customer.getName(),
                     customer.getEmail());
         }
-        System.out.println("-".repeat(noOfLines));
+
+        System.out.println("-".repeat(58));
     }
 
-    public static void showInvoices (TreeMap<Integer, Invoice> invoices) {
-        System.out.println("-".repeat(noOfLines));
+    public static void showInvoices(List<Invoice> invoices) {
+        System.out.println("-".repeat(74));
+
+        // Print header
         System.out.printf("| %-10s | %-25s | %-15s | %-15s |%n",
                 "Invoice No", "Customer Name", "Status", "Total");
-        System.out.println("-".repeat(noOfLines));
 
-        for (Integer invNo : invoices.keySet()) {
-            Invoice invoice = invoices.get(invNo);
+        System.out.println("-".repeat(74));
+
+        // Print invoice data
+        for (int serialNo = 0; serialNo < invoices.size(); serialNo++) {
+            Invoice invoice = invoices.get(serialNo);
             System.out.printf("| %-10d | %-25s | %-15s | %-15s |%n",
-                    (invNo),
+                    serialNo + 1,
                     invoice.getCustomer().getName(),
                     invoice.getStatus(),
-                    invoice.getTotal());
+                    String.format("Rs.%.2f", invoice.getTotal()));
         }
 
-        System.out.println("-".repeat(noOfLines));
+        System.out.println("-".repeat(74));
     }
 
     public static String showStatuses () {
         StringBuilder sb = new StringBuilder("Status\n");
-        for (int i = 0; i < invoiceStatus.size(); i++) {
-            sb.append(invoiceStatus.get(i)).append(" -> ").append(i + 1).append("\n");
+        for (int i = 0; i < GlobalConstants.INVOICE_STATUS.size(); i++) {
+            sb.append(GlobalConstants.INVOICE_STATUS.get(i)).append(" -> ").append(i + 1).append("\n");
         }
         return sb.toString().trim();
     }
 
     // Validations
-    public static char getValidOption (char option, char option1, char option2, Scanner scanner, String fieldName, String[][] availableOptions) {
-        char inputOption = option;
-        while (inputOption != option1 && inputOption != option2) {
-            System.out.println("\n" + ErrorUtils.optionError(fieldName, availableOptions));
+    public static char getValidOption (Set<Character> options, Scanner scanner, String fieldName, String prompt) {
+        char inputOption = '\0';
+
+        System.out.println("\n" + prompt.trim());
+
+        while (!options.contains(inputOption)) {
+            System.out.println("\n" + ErrorUtils.optionError(fieldName, options));
 
             inputOption = Utils.handleOptionStringOutOfBoundError(scanner, inputOption, fieldName);
 
-            inputOption = Character.toUpperCase(inputOption);
         }
+
         return inputOption;
     }
 
     // Overloading the Valid function for String Types
-    public static String getValidInput (String s, String regex, Scanner scanner, String example, String fieldName) {
-        String ans = s;
-        while (!ans.matches(regex)) {
+    public static String getValidStringInput (String regex, Scanner scanner, String example, String fieldName, String prompt) {
+        String value = "";
+
+        System.out.println("\n" + prompt.trim());
+
+        value = scanner.nextLine().trim();
+
+        while (!value.matches(regex)) {
             System.out.println("\n" + ErrorUtils.regexMatchFailedError(fieldName, example));
-            ans = scanner.nextLine().trim();
+            value = scanner.nextLine().trim();
         }
-        return ans;
+        return value;
     }
 
     // Overloading the Valid function for Integer Types
-    public static int getValidInput (int option, int lowerLimit, int upperLimit, Scanner scanner, String fieldName) {
-        int inputOption = option;
+    public static int getValidRange(int lowerLimit, int upperLimit, Scanner scanner, String fieldName, String prompt) {
+        int inputOption = 0;
+
+        System.out.println("\n" + prompt.trim());
+
+        inputOption = Utils.handleIntegerInputMisMatches(inputOption, lowerLimit - 1, scanner);
 
         while (inputOption < lowerLimit || inputOption > upperLimit) {
-            System.out.println("\n" + ErrorUtils.rangeOutOfBoundError(fieldName, inputOption, lowerLimit, upperLimit));
+            System.out.println("\n" + ErrorUtils.integerRangeOutOfBoundError(fieldName, inputOption, lowerLimit, upperLimit));
 
-            inputOption = (int) Utils.handleIntegerInputMisMatches(inputOption, scanner);
+            inputOption = Utils.handleIntegerInputMisMatches(inputOption, lowerLimit - 1, scanner);
         }
 
         return inputOption;
     }
 
     // Overloading the Valid function for Double Types
-    public static double getValidInput (double option, double lowerLimit, double upperLimit, Scanner scanner, String fieldName) {
-        double inputOption = option;
+    public static double getValidDoubleInput(double lowerLimit, Scanner scanner, String fieldName, String prompt)
+    {
+        double inputValue = 0;
 
-        while (inputOption < lowerLimit || inputOption > upperLimit) {
-            System.out.println("\n" + ErrorUtils.rangeOutOfBoundError(fieldName, inputOption, lowerLimit, upperLimit));
+        System.out.println("\n" + prompt.trim());
 
-            inputOption = Utils.handleIntegerInputMisMatches(inputOption, scanner);
+        inputValue = Utils.handleDoubleInputMisMatches(inputValue, lowerLimit -1, scanner);
+
+        while (inputValue < lowerLimit)
+        {
+            System.out.println("\n" + ErrorUtils.negativeInputError(fieldName));
+
+            inputValue = Utils.handleDoubleInputMisMatches(inputValue, lowerLimit -1, scanner);
         }
 
-        return inputOption;
-    }
-
-    public static void printLines (int repeatTime) {
-        System.out.println("-".repeat(repeatTime));
-    }
-
-    public static boolean redirectVerification (String module, Scanner scanner) {
-        System.out.println("\nSince, there is no " + module + ", you have to create" + module + " .");
-
-        System.out.println("\nWould you like to create the " + module + "\nY -> Yes\nN -> No");
-
-        char reDirectToCustomerModule = 'A';
-
-        reDirectToCustomerModule = Utils.handleOptionStringOutOfBoundError(scanner,reDirectToCustomerModule, "Redirection Option");
-        reDirectToCustomerModule = Character.toUpperCase(reDirectToCustomerModule);
-
-        String[][] availableOptions = { {"Y", "Yes"}, {"N", "No"} };
-
-        reDirectToCustomerModule = Utils.getValidOption(reDirectToCustomerModule,'Y', 'N', scanner, "Redirection to Customer Creation", availableOptions);
-
-        return reDirectToCustomerModule == 'Y';
-    }
-
-    public static String getAddressFieldInput(String regex, Scanner scanner, String example, String fieldName) {
-        System.out.println("\nEnter the " + fieldName + " (Eg. " + example + "):");
-
-        String name = scanner.nextLine().trim();
-
-        name = Utils.getValidInput(name, regex, scanner, example, fieldName);
-
-        return name;
-    }
-
-    public void printItemHeaders () {
-        Utils.printLines(60);
-        System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s |\n",
-                "Item Number",
-                "Item Type",
-                "Item Unit",
-                "Item Name",
-                "Intra State Tax Rate",
-                "Inter State Tax Rate",
-                "Item Price",
-                "Item Description");
-        Utils.printLines(60);
-    }
-
-    public void printCustomerHeaders () {
-        Utils.printLines(60);
-        System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s |\n",
-                "Item Number",
-                "Item Type",
-                "Item Unit",
-                "Item Name",
-                "Intra State Tax Rate",
-                "Inter State Tax Rate",
-                "Item Price",
-                "Item Description");
-        Utils.printLines(60);
-    }
-
-    public void printInvoiceHeaders () {
-        Utils.printLines(60);
-        System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s |\n",
-                "Item Number",
-                "Item Type",
-                "Item Unit",
-                "Item Name",
-                "Intra State Tax Rate",
-                "Inter State Tax Rate",
-                "Item Price",
-                "Item Description");
-        Utils.printLines(60);
+        return inputValue;
     }
 
     public static char handleOptionStringOutOfBoundError (Scanner scanner, char option, String fieldName) {
         char inputOption = option;
-        try {
+        try
+        {
             inputOption = scanner.nextLine().trim().charAt(0);
-        } catch (StringIndexOutOfBoundsException | InputMismatchException e) {
+        }
+        catch (StringIndexOutOfBoundsException | InputMismatchException e)
+        {
             System.out.println("\nYou have pressed the Enter Key\nEnter the " + fieldName + " again");
             inputOption = '\0';
         }
@@ -227,24 +167,36 @@ public class Utils {
         return inputOption;
     }
 
-    public static double handleIntegerInputMisMatches (double s, Scanner scanner) {
-        double input = s;
-        try {
-            input = scanner.nextDouble();
-        } catch (InputMismatchException i) {
+    public static double handleDoubleInputMisMatches (double value, double defaultValue, Scanner scanner) {
+        double inputValue = value;
+        try
+        {
+            inputValue = scanner.nextDouble();
+        }
+        catch (InputMismatchException i)
+        {
             System.out.println("\nYou have entered different Input type other than double (Or) Int.\nEnter data in Integer (Or) Double type");
-            input = (int) 1e9;
+            inputValue = defaultValue;
         }
 
-        scanner.nextLine();
-
-        if (input == (int) 1e9) {
-            input = 0;
-        }
-
-        return input;
+        return inputValue;
     }
 
+    public static int handleIntegerInputMisMatches (int value, int defaultValue, Scanner scanner)
+    {
+        int inputValue = value;
+        try
+        {
+            inputValue = scanner.nextInt();
+        }
+        catch (InputMismatchException | IndexOutOfBoundsException i)
+        {
+            System.out.println("\nProvided input is invalid\nEg. 1 - 100");
+            inputValue = defaultValue;
+        }
 
+        return inputValue;
+
+    }
 
 }

@@ -1,14 +1,16 @@
 package invoice.utils;
 
+import java.util.Set;
+
 public class ErrorUtils {
 
-    public static String optionError(String fieldName, String[][] availableOptions) {
+    public static String optionError(String fieldName, Set<Character> options) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("You have entered Wrong Input in ").append(fieldName).append(", try with the following").append("\n\n").append("The Options are").append("\n");
 
-        for (String[] availableOption : availableOptions) {
-            sb.append(availableOption[0]).append(", ").append(availableOption[0].toLowerCase()).append(" -> ").append(availableOption[1]).append("\n");
+        for (Character option : options) {
+            sb.append(option).append(", ");
         }
 
         sb.append("\n").append("Enter the Option again, refer the above options:");
@@ -20,7 +22,11 @@ public class ErrorUtils {
         return "Your " + fieldName + " didn't match with the validation regex.\n\n" + "Example: " + example + "\n\nEnter the input again, refer the above one:";
     }
 
-    public static String rangeOutOfBoundError(String fieldName, double input, double lowerLimit, double upperLimit) {
+    public static String negativeInputError(String fieldName) {
+        return "You have entered a negative number" + ".\n\n" + "Enter the number a non negative number " + fieldName + ":";
+    }
+
+    public static String integerRangeOutOfBoundError(String fieldName, int input, int lowerLimit, int upperLimit) {
         if (input < 0) {
             return "You have entered a negative number" + ".\n\n" + "The range for " + fieldName + " is " + "(" + lowerLimit + " - " + upperLimit + ")" + ".\n\n" + "Enter the number from the above mentioned range for " + fieldName + ":";
         }
