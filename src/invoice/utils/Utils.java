@@ -5,6 +5,7 @@ import invoice.src.Customer;
 import invoice.src.Invoice;
 import invoice.src.Item;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class Utils {
@@ -14,67 +15,73 @@ public class Utils {
     }
 
     public static void showItems(List<Item> items) {
-        System.out.println("-".repeat(58));
+        int noOfLines = 58;
+
+        System.out.println("-".repeat(noOfLines));
 
         // Print header
         System.out.printf("| %-10s | %-25s | %-15s |%n",
                 "Item No", "Item Name", "Price");
 
-        System.out.println("-".repeat(58));
+        System.out.println("-".repeat(noOfLines));
 
         // Print item data
         for (int serialNo = 0; serialNo <  items.size(); serialNo++) {
             Item item = items.get(serialNo);
             System.out.printf("| %-10d | %-25s | %-15s |%n",
-                    serialNo + 1,
+                    item.getItemNo(),
                     item.getItemName(),
                     String.format("Rs.%.2f", item.getPrice()));
         }
 
-        System.out.println("-".repeat(58));
+        System.out.println("-".repeat(noOfLines));
     }
 
     public static void showCustomers(List<Customer> customers) {
-        System.out.println("-".repeat(58));
+        int noOfLines = 58;
+        System.out.println("-".repeat(noOfLines));
 
         // Print header
         System.out.printf("| %-10s | %-25s | %-15s |%n",
                 "Customer No", "Customer Name", "Customer Email");
 
-        System.out.println("-".repeat(58));
+        System.out.println("-".repeat(noOfLines));
 
         // Print customer data
         for (int serialNo = 0; serialNo < customers.size(); serialNo++) {
             Customer customer = customers.get(serialNo);
             System.out.printf("| %-10d | %-25s | %-15s |%n",
-                    serialNo + 1,
+                    customer.getCusNo(),
                     customer.getName(),
                     customer.getEmail());
         }
 
-        System.out.println("-".repeat(58));
+        System.out.println("-".repeat(noOfLines));
     }
 
     public static void showInvoices(List<Invoice> invoices) {
-        System.out.println("-".repeat(74));
+        int noOfLines = 85;
+
+        System.out.println("-".repeat(noOfLines));
 
         // Print header
-        System.out.printf("| %-10s | %-25s | %-15s | %-15s |%n",
-                "Invoice No", "Customer Name", "Status", "Total");
+        System.out.printf("| %-10s | %-25s | %-15s | %-15s | %-15s |%n",
+                "Invoice No", "Customer Name", "Total", "Due Amount", "Status");
 
-        System.out.println("-".repeat(74));
+        System.out.println("-".repeat(noOfLines));
 
         // Print invoice data
         for (int serialNo = 0; serialNo < invoices.size(); serialNo++) {
             Invoice invoice = invoices.get(serialNo);
-            System.out.printf("| %-10d | %-25s | %-15s | %-15s |%n",
-                    serialNo + 1,
+            System.out.printf("| %-10d | %-25s | %-15s | %-15s | %-15s |%n",
+                    invoice.getInvNo(),
                     invoice.getCustomer().getName(),
-                    invoice.getStatus(),
-                    String.format("Rs.%.2f", invoice.getTotal()));
+                    String.format("Rs.%.2f", invoice.getTotal()),
+                    String.format("Rs.%.2f", invoice.getDueAmount()),
+                    invoice.getStatus());
         }
 
-        System.out.println("-".repeat(74));
+        System.out.println("-".repeat(noOfLines));
     }
 
     public static String showStatuses () {
@@ -91,10 +98,12 @@ public class Utils {
 
         System.out.println("\n" + prompt.trim());
 
+        inputOption = Utils.handleCharacterInput(scanner, inputOption,fieldName);
+
         while (!options.contains(inputOption)) {
             System.out.println("\n" + ErrorUtils.optionError(fieldName, options));
 
-            inputOption = Utils.handleOptionStringOutOfBoundError(scanner, inputOption, fieldName);
+            inputOption = Utils.handleCharacterInput(scanner, inputOption, fieldName);
 
         }
 
@@ -102,14 +111,14 @@ public class Utils {
     }
 
     // Overloading the Valid function for String Types
-    public static String getValidStringInput (String regex, Scanner scanner, String example, String fieldName, String prompt) {
+    public static String getValidStringInput (String regex, Scanner scanner, String example, String fieldName, String prompt, boolean isMandatory) {
         String value = "";
 
         System.out.println("\n" + prompt.trim());
 
         value = scanner.nextLine().trim();
 
-        while (!value.matches(regex)) {
+        while (isMandatory && !value.matches(regex)) {
             System.out.println("\n" + ErrorUtils.regexMatchFailedError(fieldName, example));
             value = scanner.nextLine().trim();
         }
@@ -140,19 +149,37 @@ public class Utils {
 
         System.out.println("\n" + prompt.trim());
 
-        inputValue = Utils.handleDoubleInputMisMatches(inputValue, lowerLimit -1, scanner);
+        inputValue = Utils.handleDoubleInput(inputValue, lowerLimit -1, scanner);
 
         while (inputValue < lowerLimit)
         {
             System.out.println("\n" + ErrorUtils.negativeInputError(fieldName));
 
-            inputValue = Utils.handleDoubleInputMisMatches(inputValue, lowerLimit -1, scanner);
+            inputValue = Utils.handleDoubleInput(inputValue, lowerLimit -1, scanner);
         }
 
         return inputValue;
     }
 
-    public static char handleOptionStringOutOfBoundError (Scanner scanner, char option, String fieldName) {
+    public static double getValidDoubleRange (double lowerLimit,  double upperLimit, Scanner scanner, String fieldName, String prompt)
+    {
+        double inputValue = 0;
+
+        System.out.println("\n" + prompt.trim());
+
+        inputValue = Utils.handleDoubleInput(inputValue, lowerLimit -1, scanner);
+
+        while (inputValue < lowerLimit || inputValue > upperLimit)
+        {
+            System.out.println("\n" + ErrorUtils.doubleInvalidAmountPaidError(fieldName, inputValue, lowerLimit, upperLimit));
+
+            inputValue = Utils.handleDoubleInput(inputValue, lowerLimit -1, scanner);
+        }
+
+        return inputValue;
+    }
+
+    private static char handleCharacterInput (Scanner scanner, char option, String fieldName) {
         char inputOption = option;
         try
         {
@@ -167,7 +194,7 @@ public class Utils {
         return inputOption;
     }
 
-    public static double handleDoubleInputMisMatches (double value, double defaultValue, Scanner scanner) {
+    private static double handleDoubleInput(double value, double defaultValue, Scanner scanner) {
         double inputValue = value;
         try
         {
@@ -175,9 +202,11 @@ public class Utils {
         }
         catch (InputMismatchException i)
         {
-            System.out.println("\nYou have entered different Input type other than double (Or) Int.\nEnter data in Integer (Or) Double type");
+            System.out.println("\nYou have entered an invalid input\nEg. 0, 0.23, 1.50");
             inputValue = defaultValue;
         }
+
+        scanner.nextLine();
 
         return inputValue;
     }
@@ -191,12 +220,65 @@ public class Utils {
         }
         catch (InputMismatchException | IndexOutOfBoundsException i)
         {
-            System.out.println("\nProvided input is invalid\nEg. 1 - 100");
+            System.out.println("\nProvided input is invalid\nEg. 1, 2, 3");
             inputValue = defaultValue;
         }
 
+        scanner.nextLine();
+
         return inputValue;
 
+    }
+
+    public static<T> void reverse (List<T> list) {
+        for (int i = 0, j = list.size() - 1; i < j; i++, j--)
+        {
+            T currentData = list.get(i);
+            list.set(i, list.get(j));
+            list.set(j, currentData);
+        }
+    }
+
+    public static int compareDates (LocalDate date1, LocalDate date2)
+    {
+
+        if (date1.getYear() < date2.getYear())
+        {
+            return 1;
+        }
+        else if (date1.getYear() > date2.getYear())
+        {
+            return -1;
+        } else
+        {
+            if (date1.getMonthValue() < date2.getMonthValue())
+            {
+                return 1;
+            }
+            else if (date1.getMonthValue() > date2.getMonthValue())
+            {
+                return -1;
+            } else
+            {
+                if (date1.getDayOfMonth() <= date2.getDayOfMonth())
+                {
+                    return 1;
+                } else
+                {
+                    return -1;
+                }
+            }
+        }
+    }
+
+    public static<T> boolean isOnlyOneData (List<T> list)
+    {
+        return list.size() == 1;
+    }
+
+    public static void showMessageOnlyOneDataIsThere (String module)
+    {
+        System.out.println("\nThere is only one " + module);
     }
 
 }

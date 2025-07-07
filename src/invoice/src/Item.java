@@ -3,6 +3,7 @@ package invoice.src;
 import invoice.utils.ItemUtil;
 import invoice.utils.Utils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,6 +14,7 @@ public class Item {
     private int itemNo;
     private char itemType;
     private char itemUnit;
+    private final LocalDate createdAt;
     private String itemName;
     private Boolean isTaxable;
     private double price;
@@ -24,9 +26,10 @@ public class Item {
 
     private static ItemUtil itemUtil;
 
-    public Item (char itemType, char itemUnit, String itemName, double price, String description, boolean isTaxable, double intraTaxRate, double interTaxRate) {
+    public Item (char itemType, char itemUnit, LocalDate createdAt, String itemName, double price, String description, boolean isTaxable, double intraTaxRate, double interTaxRate) {
         this.itemType = itemType;
         this.itemUnit = itemUnit;
+        this.createdAt = createdAt;
         this.itemName = itemName;
         this.price = price;
         this.description = description;
@@ -40,7 +43,8 @@ public class Item {
     public static Item create (Scanner scanner) {
         System.out.println("\nYou can add Item now");
 
-        if (itemUtil == null) {
+        if (itemUtil == null)
+        {
             itemUtil = new ItemUtil(scanner);
         }
 
@@ -59,11 +63,13 @@ public class Item {
 
         double[] taxableDetails = itemUtil.getTaxableInput(true, false);
 
-        return new Item(itemType, itemUnit, itemName, price, nDescription, taxableDetails[0] == 1, taxableDetails[1], taxableDetails[2]);
+        return new Item (itemType, itemUnit, LocalDate.now(), itemName, price, nDescription, taxableDetails[0] == 1, taxableDetails[1], taxableDetails[2]);
     }
 
     public void update (Scanner scanner) {
-        while (true) {
+        int option = -1;
+        do
+        {
             System.out.println("\nOption 1 -> Updating Item Details");
             System.out.println("Option 2 -> Updating Item Tax Details");
             System.out.println("Option 3 -> To exit the update");
@@ -71,33 +77,44 @@ public class Item {
 
             System.out.println("\nEnter the option: ");
 
-            int option = -1;
             option = Utils.handleIntegerInputMisMatches(option, -1, scanner);
 
-            if (option == 3) {
-                System.out.println("\nExiting the Customer Module...");
-                break;
-            }
 
             switch (option) {
                 case 1:
+                {
                     updateItemDetails(scanner);
                     break;
+                }
 
                 case 2:
+                {
                     updateItemTaxes(scanner);
                     break;
+                }
+
+                case 3:
+                {
+                    System.out.println("\nExiting the Item Updation Module...");
+                    break;
+                }
 
                 default:
+                {
                     System.out.println("\nEnter a valid input (1 - 3)...");
                     break;
+                }
             }
-        }
+        } while (option != 3);
+
     }
 
     // Items Primary Details
     private void updateItemDetails (Scanner scanner) {
-        while (true) {
+        int option = -1;
+
+        do
+        {
             System.out.println("\nOption 1 -> Updating Item Type");
             System.out.println("Option 2 -> Updating Item Name");
             System.out.println("Option 3 -> Updating Item Unit");
@@ -107,96 +124,105 @@ public class Item {
             System.out.println("-".repeat(30));
 
             System.out.println("\nEnter the option: ");
-            int option = -1;
             option = Utils.handleIntegerInputMisMatches(option, -1, scanner);
-
-            if (option == 6) {
-                System.out.println("\nExiting the Customer Module...");
-                break;
-            }
 
             switch (option) {
 
                 case 1:
+                {
                     char previousItemType = this.itemType;
 
                     char nItemType = itemUtil.getItemTypeInput();
 
                     this.setItemType(nItemType);
 
-                    System.out.println("\nItem's Type updated from " + getItemType(itemType) + " to " + nItemType );
+                    System.out.println("\nItem's Type updated from " + getItemType(previousItemType) + " to " + getItemType(nItemType));
                     break;
+                }
 
                 case 2:
+                {
                     String previousName = this.itemName;
 
                     String updatedItemName = itemUtil.getItemNameInput();
 
                     this.setItemName(updatedItemName);
 
-                    System.out.println("\nItem's Description updated from " + previousName + " to " + updatedItemName );
+                    System.out.println("\nItem's Description updated from " + previousName + " to " + updatedItemName);
 
                     break;
+                }
 
                 case 3:
+                {
                     char previousItemUnit = this.itemUnit;
 
                     char nItemUnit = itemUtil.getItemUnitInput();
 
                     this.setItemUnit(nItemUnit);
 
-                    System.out.println("\nItem's Unit updated from " + getItemUnit(itemUnit) + " to " + nItemUnit );
+                    System.out.println("\nItem's Unit updated from " + getItemUnit(previousItemUnit) + " to " + getItemUnit(nItemUnit));
 
                     break;
+                }
 
                 case 4:
+                {
                     double previousPrice = this.price;
 
                     double updatedPrice = itemUtil.getPriceInput();
 
                     this.setPrice(updatedPrice);
 
-                    System.out.println("\nItem's Price updated from " + previousPrice + " to " + updatedPrice );
+                    System.out.println("\nItem's Price updated from " + previousPrice + " to " + updatedPrice);
                     break;
+                }
 
                 case 5:
+                {
                     String previousDescription = this.description;
 
                     String nDescription = itemUtil.getDescription(false);
 
                     this.setDescription(nDescription);
 
-                    System.out.println("\nItem's Description updated from " + previousDescription + " to " + nDescription );
+                    System.out.println("\nItem's Description updated from " + previousDescription + " to " + nDescription);
                     break;
+                }
+
+                case 6:
+                {
+                    System.out.println("\nExiting the Item Details Updation Module...");
+                    break;
+                }
 
                 default:
+                {
                     System.out.println("\nEnter a valid input (1 - 6)");
                     break;
+                }
             }
-        }
+        } while (option != 6);
     }
 
     // Item's Tax Details
     private void updateItemTaxes (Scanner scanner) {
-        while (true) {
+        int option = -1;
+
+        do
+        {
             System.out.println("\nOption 1 -> Updating Taxable");
             System.out.println("Option 2 -> Updating Intra State Tax Rate");
             System.out.println("Option 3 -> Updating Inter State Tax Rate");
             System.out.println("Option 4 -> For exit");
 
-            System.out.println("Enter Option: ");
+            System.out.println("\nEnter Option: ");
 
-            int option = -1;
             option = Utils.handleIntegerInputMisMatches(option, -1, scanner);
-
-            if (option == 4) {
-                System.out.println("\nExiting the Items Tax Details Module...");
-                break;
-            }
 
             switch (option) {
                 case 1:
-
+                {
                     double[] taxableDetails = itemUtil.getTaxableInput(false, this.isTaxable);
 
                     this.setIsTaxable(taxableDetails[0] == 1);
@@ -205,8 +231,10 @@ public class Item {
 
                     System.out.println("\nTaxable has been updated to " + (this.isTaxable ? "true" : "false"));
                     break;
+                }
 
                 case 2:
+                {
                     if (!this.isTaxable) {
                         System.out.println("\nThis item is not taxable...");
                         break;
@@ -214,16 +242,16 @@ public class Item {
 
                     double previousIntraTaxRate = this.intraTaxRate;
 
-                    System.out.println("\n: ");
-
-                    double nIntraTaxRate = Utils.getValidDoubleInput( 0, scanner, "Intra Tax Rate", "Enter the Intra Tax Rate:");
+                    double nIntraTaxRate = Utils.getValidDoubleInput(0, scanner, "Intra Tax Rate", "Enter the Intra Tax Rate:");
 
                     this.setIntraTaxRate(nIntraTaxRate);
 
-                    System.out.println("\nIntra State Tax Rate updated from " + previousIntraTaxRate + " to " + nIntraTaxRate );
+                    System.out.println("\nIntra State Tax Rate updated from " + previousIntraTaxRate + " to " + nIntraTaxRate);
                     break;
+                }
 
                 case 3:
+                {
                     if (!isTaxable) {
                         System.out.println("\nThis item is not taxable...");
                         break;
@@ -231,18 +259,28 @@ public class Item {
 
                     double previousInterTaxRate = this.interTaxRate;
 
-                    double nInterTaxRate = Utils.getValidDoubleInput( 0,  scanner, "Inter Tax Rate", "Enter the Inter Tax Rate:");
+                    double nInterTaxRate = Utils.getValidDoubleInput(0, scanner, "Inter Tax Rate", "Enter the Inter Tax Rate:");
 
                     this.setInterTaxRate(nInterTaxRate);
 
-                    System.out.println("\nInter State Tax Rate updated from " + previousInterTaxRate + " to " + nInterTaxRate );
+                    System.out.println("\nInter State Tax Rate updated from " + previousInterTaxRate + " to " + nInterTaxRate);
                     break;
+                }
+
+                case 4:
+                {
+                    System.out.println("\nExiting the Items Tax Details Module...");
+                    break;
+                }
 
                 default:
+                {
                     System.out.println("\nEnter a valid input (1 - 4)");
                     break;
+                }
             }
-        }
+        } while (option != 4);
+
     }
 
     public static Item search (String itemName, List<Item> items) {
@@ -252,6 +290,11 @@ public class Item {
             }
         }
         return null;
+    }
+
+    public static void sortItems (List<Item> sortedItems)
+    {
+        itemUtil.sortingModule(sortedItems);
     }
 
     public static int getTotalItems () {
@@ -322,12 +365,20 @@ public class Item {
         this.interTaxRate = interTaxRate;
     }
 
-    public int getItemNo () {
+    public int getItemNo() {
         return itemNo;
     }
 
-    public void setItemNo (int itemNo) {
+    public void setItemNo(int itemNo) {
         this.itemNo = itemNo;
+    }
+
+    public LocalDate getCreatedAt() {
+        return createdAt;
+    }
+
+    public Boolean getTaxable() {
+        return isTaxable;
     }
 
     public double getRate (int quantity, boolean withinState) {

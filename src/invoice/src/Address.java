@@ -24,21 +24,23 @@ public class Address {
     }
 
     public static Address create (Scanner scanner) {
-        String country = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "India", "Country", "Enter the Country:");
+        String country = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "India", "Country", "Enter the Country:", false);
 
-        String state = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Tamil Nadu", "State", "Enter the State:");
+        String state = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Tamil Nadu", "State", "Enter the State:", false);
 
-        String city = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner,"Madurai", "City", "Enter the City:");
+        String city = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner,"Madurai", "City", "Enter the City:", false);
 
-        String street = Utils.getValidStringInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street", "Enter the Street:");
+        String street = Utils.getValidStringInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street", "Enter the Street:", false);
 
-        String pinCode = Utils.getValidStringInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code", "Enter the Pin Code:");
+        String pinCode = Utils.getValidStringInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code", "Enter the Pin Code:", false);
 
         return new Address(country, state, city, street, pinCode);
     }
 
     public void update (Scanner scanner) {
-        while (true) {
+        int option = -1;
+        do
+        {
             System.out.println("\nOption 1 -> Updating Country");
             System.out.println("Option 2 -> Updating State");
             System.out.println("Option 3 -> Updating City");
@@ -47,69 +49,82 @@ public class Address {
             System.out.println("Option 6 -> Exiting");
 
             System.out.println("\nEnter the Option: ");
-            int option = -1;
             option = Utils.handleIntegerInputMisMatches(option, -1, scanner);
 
-            if (option == 6) {
-                System.out.println("\nExiting the Customer Module...");
-                break;
-            }
-
-            switch (option) {
+            switch (option)
+            {
                 case 1:
+                {
                     String previousCountry = this.country;
 
-                    String nCountry = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "India", "Country", "Enter the Country:");
+                    String nCountry = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "India", "Country", "Enter the Country:", true);
 
                     this.setCountry(nCountry);
 
                     System.out.println("\nCustomer's Country updated from " + previousCountry + " to " + nCountry);
                     break;
+                }
 
                 case 2:
+                {
                     String previousState = this.state;
 
-                    String nState = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Tamil Nadu", "State", "Enter the State:");
+                    String nState = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Tamil Nadu", "State", "Enter the State:",true);
 
                     this.setState(nState);
                     System.out.println("Customer's State updated from " + previousState + " to " + nState);
                     break;
+                }
 
                 case 3:
+                {
                     String previousCity = this.city;
 
-                    String nCity = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner,"Madurai", "City", "Enter the City:");
+                    String nCity = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Madurai", "City", "Enter the City:", true);
 
                     this.setCity(nCity);
 
                     System.out.println("\nCustomer's City updated from " + previousCity + " to " + nCity);
                     break;
+                }
 
                 case 4:
+                {
                     String previousStreet = this.street;
 
-                    String nStreet = Utils.getValidStringInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street", "Enter the Street:");
+                    String nStreet = Utils.getValidStringInput(STREET_REGEX, scanner, "14/22, dummy 1st street", "Street", "Enter the Street:", true);
 
                     this.setStreet(nStreet);
 
                     System.out.println("\nCustomer's Street updated from " + previousStreet + " to " + nStreet);
                     break;
+                }
 
                 case 5:
+                {
                     String previousPinCode = this.pinCode;
 
-                    String nPinCode = Utils.getValidStringInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code", "Enter the Pin Code");
+                    String nPinCode = Utils.getValidStringInput(PIN_CODE_REGEX, scanner, "600001", "Pin Code", "Enter the Pin Code", true);
 
                     this.setPinCode(nPinCode);
 
                     System.out.println("\nCustomer's Pin Code updated from " + previousPinCode + " to " + nPinCode);
                     break;
+                }
+
+                case 6:
+                {
+                    System.out.println("\nExiting the Address Module...");
+                    break;
+                }
 
                 default:
+                {
                     System.out.println("Enter a Valid Input (1 - 6)");
                     break;
+                }
             }
-        }
+        } while (option != 6);
     }
 
     public void setCountry(String country) {

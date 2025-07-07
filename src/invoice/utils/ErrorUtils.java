@@ -23,7 +23,7 @@ public class ErrorUtils {
     }
 
     public static String negativeInputError(String fieldName) {
-        return "You have entered a negative number" + ".\n\n" + "Enter the number a non negative number " + fieldName + ":";
+        return "You have entered a negative number" + ".\n\n" + "Enter the number a non negative number for " + fieldName + ":";
     }
 
     public static String integerRangeOutOfBoundError(String fieldName, int input, int lowerLimit, int upperLimit) {
@@ -32,6 +32,14 @@ public class ErrorUtils {
         }
         return "You have entered an number that's not exist in the input range for "
                 + fieldName + ".\n\n" + "The range for " + fieldName + " is " + "(" + lowerLimit + " - " + upperLimit + ")" + ".\n\n" + "Enter the number from the above mentioned range for " + fieldName + ":";
+    }
+
+    public static String doubleInvalidAmountPaidError (String fieldName, double input, double lowerLimit, double upperLimit) {
+        if (input < 0) {
+            return "You have entered a negative number" + ".\n\n" + "The Amount range for " + fieldName + " is " + "(" + lowerLimit + " - " + upperLimit + ")" + ".\n\n" + "Pay the amount from the above mentioned range for " + fieldName + ":";
+        }
+        return "You have entered an number exceeds the Amount to be paid for "
+                + fieldName + ".\n\n" + "The Amount range for " + fieldName + " is " + "(" + lowerLimit + " - " + upperLimit + ")" + ".\n\n" + "Pay the amount from the above mentioned range for " + fieldName + ":";
     }
 
 }

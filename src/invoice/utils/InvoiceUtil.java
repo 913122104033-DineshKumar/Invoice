@@ -70,10 +70,10 @@ public class InvoiceUtil
     }
 
     public double getPaymentInput (double dueAmount) {
-        System.out.println("Enter the amount (Max Limit: " + dueAmount + " ):");
 
-        return Utils.getValidDoubleInput( 0, scanner, "Amount", "\nEnter the amount:");
+        double amountToBeReduced = Utils.getValidDoubleRange(0, dueAmount, scanner, "Invoice Due Amount", "\nEnter the amount (Due Amount: " + dueAmount + "):");
 
+        return Math.min(amountToBeReduced, dueAmount);
     }
 
     public void reArrangeInvoiceList (List<Invoice> invoices) {
@@ -86,18 +86,12 @@ public class InvoiceUtil
         }
     }
 
-    private double getDoubleInput (int upperLimit, String fieldName)
-    {
-        return Utils.getValidDoubleInput( 0, scanner, fieldName, "Enter the " + fieldName + ":");
-    }
-
-
     public boolean neglectWarning (Invoice invoice, String module)
     {
         if (invoice.getStatus().equals("CLOSED") || invoice.getStatus().equals("PARTIALLY_PAID")) {
             System.out.println("\nSince, invoice is closed or partially paid, it's not recommended to " + module + "...");
 
-            char yesOrNo = Utils.getValidOption( GlobalConstants.YES_NO_OPTIONS, scanner, "Invoice updation option",  "Still you want to \" + module + \"\\nY -> Yes\\nN -> No");
+            char yesOrNo = Utils.getValidOption( GlobalConstants.YES_NO_OPTIONS, scanner, "Invoice updation option",  "Still you want to " + module + "\nY -> Yes\nN -> No");
 
             if (yesOrNo == 'N' || yesOrNo == 'n') {
                 System.out.println("\nNo " + module + " has been done");
@@ -106,6 +100,11 @@ public class InvoiceUtil
 
         }
         return false;
+    }
+
+    private double getDoubleInput (int upperLimit, String fieldName)
+    {
+        return Utils.getValidDoubleInput( 0, scanner, fieldName, "Enter the " + fieldName + ":");
     }
 
 }

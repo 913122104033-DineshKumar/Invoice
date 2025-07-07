@@ -3,6 +3,7 @@ package invoice.utils;
 import invoice.GlobalConstants;
 import invoice.src.Item;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class ItemUtil
@@ -33,7 +34,7 @@ public class ItemUtil
 
     public String getItemNameInput ()
     {
-        return Utils.getValidStringInput( GlobalConstants.NAME_REGEX, scanner, "Eg. Punam Saree", "Item Name", "Enter the Item Name: ");
+        return Utils.getValidStringInput( GlobalConstants.NAME_REGEX, scanner, "Eg. Punam Saree", "Item Name", "Enter the Item Name: ", true);
     }
 
     public double[] getTaxableInput (boolean isCreation, boolean previousIsTaxable)
@@ -72,9 +73,6 @@ public class ItemUtil
     }
 
     public double getPriceInput () {
-
-        System.out.println("\nEnter the Item Selling Price ");
-
         return Utils.getValidDoubleInput( 0, scanner, "Selling Price", "Enter the Item Selling Price:");
     }
 
@@ -86,14 +84,85 @@ public class ItemUtil
 
             if (yesOrNo == 'Y' || yesOrNo == 'y') {
 
-                description = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Nice Saree", "Item Description", "Enter the Description:");
+                description = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Nice Saree", "Item Description", "Enter the Description:", true);
             }
         } else {
 
-            description = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Nice Saree", "Item Description", "Enter the Description:");
+            description = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Nice Saree", "Item Description", "Enter the Description:", true);
         }
 
         return description;
+    }
+
+    public void sortingModule (List<Item> items)
+    {
+        SortingUtil sortingUtil = new SortingUtil();
+
+        System.out.println("\nEnter the choice based in which you want to sort the Items: ");
+
+        int sortBy = -1;
+
+        do
+        {
+            System.out.println("\nOption 1 -> Sort by Item Number");
+            System.out.println("\nOption 2 -> Sort by Item Price");
+            System.out.println("\nOption 3 -> Sort by Date");
+
+            sortBy = Utils.handleIntegerInputMisMatches(sortBy, -1, scanner);
+
+        } while (sortBy < 1 || sortBy > 3);
+
+        int sortingOrder = -1;
+
+        do
+        {
+            System.out.println("\nOption 1 -> Ascending Order");
+            System.out.println("\nOption 2 -> Descending Order");
+
+            sortingOrder = Utils.handleIntegerInputMisMatches(sortingOrder, -1, scanner);
+
+        } while (sortingOrder < 1 || sortingOrder > 2);
+
+        if (sortBy == 1)
+        {
+            List<Integer> helper = new ArrayList<>();
+
+            for (Item item : items)
+            {
+                helper.add(item.getItemNo());
+            }
+
+            sortingUtil.mergeSort(0, items.size() - 1, items, helper);
+        }
+        else if (sortBy == 2)
+        {
+            List<Double> helper = new ArrayList<>();
+
+            for (Item item : items)
+            {
+                helper.add(item.getPrice());
+            }
+
+            sortingUtil.mergeSort(0, items.size() - 1, items, helper);
+        } else
+        {
+            List<LocalDate> helper = new ArrayList<>();
+
+            for (Item item : items)
+            {
+                helper.add(item.getCreatedAt());
+            }
+
+            sortingUtil.mergeSort(0, items.size() - 1, items, helper);
+        }
+
+        if (sortingOrder == 2)
+        {
+            Utils.reverse(items);
+        }
+
+        Utils.showItems(items);
+
     }
 
     public static void reArrangeItemList (List<Item> items) {

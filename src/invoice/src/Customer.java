@@ -3,6 +3,7 @@ package invoice.src;
 import invoice.utils.CustomerUtil;
 import invoice.utils.Utils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -13,6 +14,7 @@ public class Customer {
     private static int totalCustomers = 0;
     private int cusNo;
     private char customerType;
+    private final LocalDate createdAt;
     private String name;
     private String companyName;
     private String email;
@@ -26,8 +28,9 @@ public class Customer {
 
     private static CustomerUtil customerUtil;
 
-    public Customer (char customerType, String name, String companyName, String email, String phone, Address address, Address shippingAddress) {
+    public Customer (char customerType, LocalDate createdAt, String name, String companyName, String email, String phone, Address address, Address shippingAddress) {
         this.customerType = customerType;
+        this.createdAt = createdAt;
         this.name = name;
         totalCustomers++;
         this.cusNo = totalCustomers;
@@ -41,7 +44,8 @@ public class Customer {
     public static Customer create (Set<String> emails, Scanner scanner) {
         System.out.println("\nYou can add Customer now");
 
-        if (customerUtil == null) {
+        if (customerUtil == null)
+        {
             customerUtil = new CustomerUtil(scanner);
         }
 
@@ -51,7 +55,8 @@ public class Customer {
 
         String companyName = "";
 
-        if (customerType == 'B' || customerType == 'b') {
+        if (customerType == 'B' || customerType == 'b')
+        {
             companyName = customerUtil.getCompanyNameInput();
         }
 
@@ -64,12 +69,14 @@ public class Customer {
 
         Address shippingAddress = customerUtil.getShippingAddressInput(officeAddress);
 
-        return new Customer(customerType, name, companyName, email, phone, officeAddress, shippingAddress);
+        return new Customer (customerType, LocalDate.now(), name, companyName, email, phone, officeAddress, shippingAddress);
     }
 
     public void update (Set<String> emails, Scanner scanner) {
+        int option = -1;
 
-        while (true) {
+        do
+        {
             System.out.println("\nOption 1 -> Updating the Customer's Primary Detail");
 
             // Office Address
@@ -85,36 +92,49 @@ public class Customer {
 
             // Option
             System.out.println("\nEnter the option: ");
-            int option = -1;
             option = Utils.handleIntegerInputMisMatches(option, -1, scanner);
 
-            if (option == 4) {
-                System.out.println("\nExiting the Customer Updation Module...");
-                break;
-            }
-
-            switch (option) {
+            switch (option)
+            {
                 case 1:
+                {
                     updateCustomerDetails(emails, scanner);
                     break;
+                }
 
                 case 2:
+                {
                     this.address.update(scanner);
                     break;
+                }
 
                 case 3:
+                {
                     this.shippingAddress.update(scanner);
                     break;
+                }
+
+                case 4:
+                {
+                    System.out.println("\nExiting the Customer Updation Module...");
+                    break;
+                }
 
                 default:
+                {
                     System.out.println("\nEnter a valid input (1 - 4)");
                     break;
+                }
             }
-        }
+        } while (option != 4);
+
     }
 
     private void updateCustomerDetails (Set<String> emails, Scanner scanner) {
-        while (true) {
+        int option = -1;
+
+        do
+        {
             System.out.println("\nOption 1 -> Updating Type");
             System.out.println("Option 2 -> Updating Name");
             System.out.println("Option 3 -> Updating Company Name (Applicable Businesses Only)");
@@ -123,36 +143,36 @@ public class Customer {
             System.out.println("Option 6 -> Exit");
 
             System.out.println("\nEnter the option: ");
-            int option = -1;
             option = Utils.handleIntegerInputMisMatches(option, -1, scanner);
 
-            if (option == 6) {
-                System.out.println("\nExiting the Customer Details Updation Module...");
-                break;
-            }
-
-            switch (option) {
+            switch (option)
+            {
                 case 1:
+                {
                     char previousCustomerType = this.getCustomerType();
 
                     char updatedCustomerType = customerUtil.getCustomerTypeInput();
 
                     this.setCustomerType(updatedCustomerType);
 
-                    System.out.println("\nCustomer's Type updated from " + getCustomerType(customerType) + " to " + this.getCustomerType() );
+                    System.out.println("\nCustomer's Type updated from " + getCustomerType(previousCustomerType) + " to " + this.getCustomerType());
                     break;
+                }
 
                 case 2:
+                {
                     String previousName = this.name;
 
                     String updatedName = customerUtil.getNameInput();
 
                     this.setName(updatedName);
 
-                    System.out.println("\nCustomer's Name updated from " + previousName + " to " + updatedName );
+                    System.out.println("\nCustomer's Name updated from " + previousName + " to " + updatedName);
                     break;
+                }
 
                 case 3:
+                {
                     String previousCompanyName = this.companyName;
 
                     if (this.customerType == 'I' || this.customerType == 'i') {
@@ -166,10 +186,12 @@ public class Customer {
 
                     this.setCompanyName(nCompanyName);
 
-                    System.out.println("\nCustomer's Company name updated from " + previousCompanyName + " to " + nCompanyName );
+                    System.out.println("\nCustomer's Company name updated from " + previousCompanyName + " to " + nCompanyName);
                     break;
+                }
 
                 case 4:
+                {
                     String previousEmail = this.email;
 
                     String nEmail = customerUtil.getEmailInput(emails);
@@ -178,10 +200,12 @@ public class Customer {
 
                     this.setEmail(nEmail);
 
-                    System.out.println("\nCustomer's Email updated from " + previousEmail + " to " + nEmail );
+                    System.out.println("\nCustomer's Email updated from " + previousEmail + " to " + nEmail);
                     break;
+                }
 
                 case 5:
+                {
                     String previousPhone = this.phone;
 
                     String nPhone = customerUtil.getPhoneInput();
@@ -190,12 +214,22 @@ public class Customer {
 
                     System.out.println("\nCustomer's Phone Number updated from " + previousPhone + " to " + nPhone);
                     break;
+                }
+
+                case 6:
+                {
+                    System.out.println("\nExiting the Customer Details Updation Module...");
+                    break;
+                }
 
                 default:
+                {
                     System.out.println("\nEnter a valid input (1 - 6)");
                     break;
+                }
             }
-        }
+        }while (option != 6);
+
     }
 
     public static Customer searchByName (String customerName, List<Customer> customers) {
@@ -205,6 +239,10 @@ public class Customer {
             }
         }
         return null;
+    }
+
+    public static void sortCustomers (List<Customer> sortedCustomers) {
+        customerUtil.sortingModule(sortedCustomers);
     }
 
     public void setCustomerType(char customerType) {
@@ -239,7 +277,7 @@ public class Customer {
         return cusNo;
     }
 
-    public void setCusNo (int cusNo) {
+    public void setCusNo(int cusNo) {
         this.cusNo = cusNo;
     }
 
@@ -267,6 +305,10 @@ public class Customer {
     public Address getAddress () { return address; }
 
     public Address getShippingAddress () { return shippingAddress; }
+
+    public LocalDate getCreatedAt() {
+        return createdAt;
+    }
 
     public void showCustomer() {
         Utils.printLines(60);

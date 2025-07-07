@@ -11,7 +11,7 @@ public class Invoice {
 
     private static int totalInvoices = 0;
     private int invNo;
-    private LocalDate date;
+    private LocalDate createdAt;
     private int paymentTerm;
     private Map<Item, Integer> itemTable;
     private double subTotal;
@@ -21,9 +21,9 @@ public class Invoice {
     private double dueAmount;
     private int status;
 
-    public Invoice(Customer customer, LocalDate date, int paymentTerm, Map<Item, Integer> itemTable, double subTotal, double discount, double shippingCharges, double total, double dueAmount, int status) {
+    public Invoice(Customer customer, LocalDate createdAt, int paymentTerm, Map<Item, Integer> itemTable, double subTotal, double discount, double shippingCharges, double total, double dueAmount, int status) {
         this.customer = customer;
-        this.date = date;
+        this.createdAt = createdAt;
         this.paymentTerm = paymentTerm;
         totalInvoices++;
         this.invNo = totalInvoices;
@@ -49,13 +49,13 @@ public class Invoice {
         return totalInvoices;
     }
 
-    public LocalDate getDate()
+    public LocalDate getCreatedAt()
     {
-        return date;
+        return createdAt;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setCreatedAt(LocalDate createdAt) {
+        this.createdAt = createdAt;
     }
 
     public int getPaymentTerm()
@@ -112,7 +112,7 @@ public class Invoice {
         return this.invNo;
     }
 
-    public void setInvNo (int invNo) {
+    public void setInvNo(int invNo) {
         this.invNo = invNo;
     }
 
@@ -153,7 +153,7 @@ public class Invoice {
         System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s |\n",
                 invNo,
                 customer.getName(),
-                date,
+                createdAt,
                 paymentTerm,
                 String.format("Rs.%.2f", subTotal),
                 String.format("%.2f%%", discount),
