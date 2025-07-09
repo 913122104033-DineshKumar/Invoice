@@ -1,17 +1,18 @@
 package invoice.src;
 
-import invoice.GlobalConstants;
-import invoice.utils.Utils;
+import invoice.handlers.InvoiceHandler;
+import invoice.utils.InputUtils;
 
 import java.time.LocalDate;
 import java.util.*;
 
-public class Invoice {
+public class Invoice
+{
     private Customer customer;
 
-    private static int totalInvoices = 0;
+    private static int totalInvoices = 1;
     private int invNo;
-    private LocalDate createdAt;
+    private final LocalDate createdAt;
     private int paymentTerm;
     private Map<Item, Integer> itemTable;
     private double subTotal;
@@ -19,14 +20,20 @@ public class Invoice {
     private double shippingCharges;
     private double total;
     private double dueAmount;
-    private int status;
+    private InvoiceHandler.Status status;
 
-    public Invoice(Customer customer, LocalDate createdAt, int paymentTerm, Map<Item, Integer> itemTable, double subTotal, double discount, double shippingCharges, double total, double dueAmount, int status) {
+    public Invoice ()
+    {
+        this.createdAt = LocalDate.now();
+    }
+
+    public Invoice(Customer customer, LocalDate createdAt, int paymentTerm, Map<Item, Integer> itemTable, double subTotal, double discount, double shippingCharges, double total, double dueAmount, InvoiceHandler.Status status)
+    {
         this.customer = customer;
         this.createdAt = createdAt;
         this.paymentTerm = paymentTerm;
-        totalInvoices++;
         this.invNo = totalInvoices;
+        totalInvoices++;
         this.itemTable = itemTable;
         this.subTotal = subTotal;
         this.discount = discount;
@@ -52,10 +59,6 @@ public class Invoice {
     public LocalDate getCreatedAt()
     {
         return createdAt;
-    }
-
-    public void setCreatedAt(LocalDate createdAt) {
-        this.createdAt = createdAt;
     }
 
     public int getPaymentTerm()
@@ -100,11 +103,13 @@ public class Invoice {
         this.total = total;
     }
 
-    public String getStatus() {
-        return GlobalConstants.INVOICE_STATUS.get(status);
+    public InvoiceHandler.Status getStatus()
+    {
+        return status;
     }
 
-    public void setStatus (int status) {
+    public void setStatus (InvoiceHandler.Status status)
+    {
         this.status = status;
     }
 
@@ -132,11 +137,17 @@ public class Invoice {
         this.dueAmount = dueAmount;
     }
 
-    public void showInvoice() {
-        Utils.printLines(145);
+    public String generateInvId ()
+    {
+        return "INV" + totalInvoices;
+    }
+
+    public void showInvoice()
+    {
+        InputUtils.printHyphens(145);
 
         // Print header
-        System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s |\n",
+        System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s| %15s | %15s |\n",
                 "Invoice Number",
                 "Customer Name",
                 "Date",
@@ -145,21 +156,23 @@ public class Invoice {
                 "Discount",
                 "Shipping Charges",
                 "Total",
+                "Due Amount",
                 "Status");
 
-        Utils.printLines(145);
+        InputUtils.printHyphens(145);
 
         // Print invoice data
-        System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s |\n",
-                invNo,
-                customer.getName(),
-                createdAt,
-                paymentTerm,
+        System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s| %15s | %15s |\n",
+                this.invNo,
+                this.customer.getName(),
+                this.createdAt,
+                this.paymentTerm,
                 String.format("Rs.%.2f", subTotal),
                 String.format("%.2f%%", discount),
                 String.format("Rs.%.2f", shippingCharges),
                 String.format("Rs.%.2f", total),
-                getStatus());
+                String.format("Rs.%.2f", dueAmount),
+                this.status);
     }
 
 }

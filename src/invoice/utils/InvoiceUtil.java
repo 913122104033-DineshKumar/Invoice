@@ -1,99 +1,80 @@
 package invoice.utils;
 
-import invoice.GlobalConstants;
+import invoice.handlers.InvoiceHandler;
 import invoice.src.Invoice;
-
-import java.util.List;
-import java.util.Scanner;
 
 public class InvoiceUtil
 {
-    private final Scanner scanner;
 
-    public InvoiceUtil(Scanner scanner)
+    public InvoiceUtil()
     {
-        this.scanner = scanner;
     }
 
-    public int getSerialNumberInput (int lowerLimit, int upperLimit, String fieldName) {
+    public int getSerialNumberInput (int lowerLimit, int upperLimit, String fieldName)
+    {
 
-        return Utils.getValidRange( lowerLimit, upperLimit, scanner, fieldName+ " Number", "Enter the " + fieldName + " Number from the table: ");
+        return InputUtils.getValidRange( lowerLimit, upperLimit, fieldName+ " Number", "Enter the " + fieldName.trim() + " Number from the table: ");
     }
 
     public int getPaymentTermInput ()
     {
-        return Utils.getValidRange( 0, 90, scanner, "Invoice's Payment Term", "Enter the Payment Term (Eg. 15, 30, 45, 90): ");
+        return InputUtils.getValidRange( 0, (int) 1e9, "Invoice's Payment Term", "Enter the Payment Term (Eg. 15, 30, 45, 90): ");
     }
 
-    public double getDiscountInput (boolean isCreation) {
+    public double getDiscountInput (boolean isCreation)
+    {
         double discount = 0;
-        if (isCreation){
-            char yesOrNo = Utils.getValidOption(GlobalConstants.YES_NO_OPTIONS, scanner, "Discount Option", "Want to Enter discount\nY -> Yes\nN -> No");
-            if (yesOrNo == 'Y' || yesOrNo == 'y') {
-                discount = getDoubleInput(100, "Discount");
+        if (isCreation)
+        {
+            char conformationOption = InputUtils.getToggleInput(  'y', "Discount Option", "Want to Enter discount (y -> yes, any other key -> no)");
+
+            if (conformationOption == 'y')
+            {
+                discount = getDoubleInput( "Discount");
             }
-        } else {
-            discount = getDoubleInput(100, "Discount(%)");
+        } else
+        {
+            discount = getDoubleInput( "Discount(%)");
         }
         return discount;
     }
 
-    public double getShippingCharges (boolean isCreation) {
+    public double getShippingCharges (boolean isCreation)
+    {
         double shippingCharges = 0;
 
-        if (isCreation) {
-            char yesOrNo = Utils.getValidOption(GlobalConstants.YES_NO_OPTIONS, scanner, "Shipping Charges Option", "Want to Enter the Shipping Charges\nY -> Yes\nN -> No");
+        if (isCreation)
+        {
+            char conformationOption = InputUtils.getToggleInput(  'y', "Shipping Charges Option", "Want to Enter the Shipping Charges (y -> yes, any other key -> no)");
 
-            if (yesOrNo == 'Y'|| yesOrNo == 'y') {
-                shippingCharges = getDoubleInput(Integer.MAX_VALUE, "Shipping Charges");
+            if (conformationOption == 'y')
+            {
+                shippingCharges = getDoubleInput("Shipping Charges");
             }
-        } else {
-            shippingCharges = getDoubleInput(Integer.MAX_VALUE, "Shipping Charges");
+        } else
+        {
+            shippingCharges = getDoubleInput("Shipping Charges");
         }
 
         return shippingCharges;
     }
 
-   public double haveReceivedPayment (double dueAmount)
-   {
-        char yesOrNo = Utils.getValidOption(GlobalConstants.YES_NO_OPTIONS, scanner, "Shipping Charges Option", "Have you received payment\nY -> yes\nN -> No");
-
-        double paidAmount = 0;
-
-        if (yesOrNo == 'Y' || yesOrNo == 'y') {
-
-            paidAmount = getPaymentInput(dueAmount);
-
-        }
-
-        return paidAmount;
-    }
-
-    public double getPaymentInput (double dueAmount) {
-
-        double amountToBeReduced = Utils.getValidDoubleRange(0, dueAmount, scanner, "Invoice Due Amount", "\nEnter the amount (Due Amount: " + dueAmount + "):");
-
-        return Math.min(amountToBeReduced, dueAmount);
-    }
-
-    public void reArrangeInvoiceList (List<Invoice> invoices) {
-
-        for (int i = 0; i < invoices.size(); i++) {
-            Invoice invoice = invoices.get(i);
-            if (i + 1 != invoice.getInvNo()) {
-                invoice.setInvNo(i + 1);
-            }
-        }
-    }
-
-    public boolean neglectWarning (Invoice invoice, String module)
+    public double getPaymentInput (double dueAmount)
     {
-        if (invoice.getStatus().equals("CLOSED") || invoice.getStatus().equals("PARTIALLY_PAID")) {
+
+        return InputUtils.getValidDoubleRange(0, dueAmount,  "Invoice Due Amount", "\nEnter the amount (Due Amount (or) Remaining Amount: " + dueAmount + "):");
+    }
+
+    public boolean showWarning(Invoice invoice, String module)
+    {
+        if (invoice.getStatus().equals(InvoiceHandler.Status.CLOSED) || invoice.getStatus().equals(InvoiceHandler.Status.PARTIALLY_PAID))
+        {
             System.out.println("\nSince, invoice is closed or partially paid, it's not recommended to " + module + "...");
 
-            char yesOrNo = Utils.getValidOption( GlobalConstants.YES_NO_OPTIONS, scanner, "Invoice updation option",  "Still you want to " + module + "\nY -> Yes\nN -> No");
+            char conformationOption = InputUtils.getToggleInput(   'y', "Invoice updation option",  "Still you want to " + module + " (y -> yes, any other key -> no)");
 
-            if (yesOrNo == 'N' || yesOrNo == 'n') {
+            if (conformationOption != 'y')
+            {
                 System.out.println("\nNo " + module + " has been done");
                 return true;
             }
@@ -102,9 +83,9 @@ public class InvoiceUtil
         return false;
     }
 
-    private double getDoubleInput (int upperLimit, String fieldName)
+    private double getDoubleInput (String fieldName)
     {
-        return Utils.getValidDoubleInput( 0, scanner, fieldName, "Enter the " + fieldName + ":");
+        return InputUtils.getValidDoubleInput( 0,  fieldName, "Enter the " + fieldName + ":");
     }
 
 }

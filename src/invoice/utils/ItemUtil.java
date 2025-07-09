@@ -1,68 +1,89 @@
 package invoice.utils;
 
-import invoice.GlobalConstants;
 import invoice.src.Item;
 
-import java.time.LocalDate;
 import java.util.*;
 
-public class ItemUtil
-{
-    private final Scanner scanner;
-    private final Set<Character> ITEM_TYPES;
-    private final Set<Character> ITEM_UNITS;
+public class ItemUtil{
 
-    public ItemUtil (Scanner scanner)
-    {
-        this.scanner = scanner;
-        this.ITEM_TYPES = new HashSet<>();
-        this.ITEM_TYPES.addAll(Arrays.asList('G', 'S', 'g', 's'));
-        this.ITEM_UNITS = new HashSet<>();
-        this.ITEM_UNITS.addAll(Arrays.asList('P', 'M', 'B', 'N', 'p', 'm', 'b', 'n'));
-    }
+    public ItemUtil () { }
 
-    public Character getItemTypeInput ()
+    public char getItemTypeInput ()
     {
-        return Utils.getValidOption( ITEM_TYPES,
-                scanner, "Item Type Option", "Enter a Item Type (G,g  -> Goods, S, s -> Services):");
+        return InputUtils.getToggleInput( 'g', "Item Type", "Enter the Item Type (g -> goods, any other key -> services)");
     }
 
     public Character getItemUnitInput ()
-    {
-        return Utils.getValidOption(ITEM_UNITS, scanner, "Item Unit Option", "Enter a Valid input (Pieces -> P, Meters -> M, Box -> B, Undefined -> N):");
+    { // Current Solution hard coding to constraints
+
+        char itemUnit = '\0';
+        do {
+            System.out.println("\nEnter the Valid Item type (P, p -> Pieces, M, m -> meters, B, b -> Box, N, n -> None");
+
+            itemUnit = InputUtils.handleCharacterInput( "Item Type");
+
+            itemUnit = Character.toLowerCase(itemUnit);
+
+        } while (itemUnit != 'p' && itemUnit != 'b' && itemUnit != 'm' && itemUnit != 'n');
+
+        return itemUnit;
     }
 
-    public String getItemNameInput ()
+    public String getItemNameInput (List<Item> items)
     {
-        return Utils.getValidStringInput( GlobalConstants.NAME_REGEX, scanner, "Eg. Punam Saree", "Item Name", "Enter the Item Name: ", true);
+        final String ITEM_NAME_REGEX = "[a-zA-Z0-9\\s'-]+";
+
+        String itemName = InputUtils.getValidStringInput(ITEM_NAME_REGEX,  "Eg. Punam Saree", "Item Name", "Enter the Item Name: ", true);
+
+        List<String> itemNames = new ArrayList<>(); // Alternatively write checkExistsMethod
+
+        for (Item item : items)
+        {
+            itemNames.add(item.getItemName().toLowerCase());
+        }
+
+        while (itemNames.contains(itemName) || !itemName.matches(ITEM_NAME_REGEX))
+        {
+            if (itemNames.contains(itemName.toLowerCase())) {
+                System.out.println("\nItem name already exists\nEnter the name again");
+            } else {
+                System.out.println(InputUtils.regexMatchFailedError("Item Name", "Eg. Punam Saree"));
+            }
+            itemName = InputUtils.handleStringInputMisMatches(itemName, "" );
+        }
+
+        return itemName;
     }
 
     public double[] getTaxableInput (boolean isCreation, boolean previousIsTaxable)
     {
         int isTaxable = 0;
         double intraTaxRate, interTaxRate;
-        char yesOrNo;
+        char conformationOption;
 
         if (isCreation)
         {
-            yesOrNo = Utils.getValidOption(GlobalConstants.YES_NO_OPTIONS,
-                    scanner, "Tax Option","Is Taxable applied\nY -> Yes\nN -> No");
+            conformationOption = InputUtils.getToggleInput(
+                     'y', "Tax Option","Is Taxable applied (y -> yes, any other key -> no)");
         } else
         {
-            if (previousIsTaxable) {
-                yesOrNo = 'N';
-            } else {
-                yesOrNo = 'Y';
+            if (previousIsTaxable)
+            {
+                conformationOption = 'n';
+            } else
+            {
+                conformationOption = 'y';
             }
         }
 
 
-        if (yesOrNo == 'Y' || yesOrNo == 'y') {
+        if (conformationOption == 'y')
+        {
             isTaxable = 1;
 
-            intraTaxRate = Utils.getValidDoubleInput( 0,  scanner, "Intra Tax Rate", "Enter the Intra Tax Rate:");
+            intraTaxRate = InputUtils.getValidDoubleInput( 0,   "Intra Tax Rate", "Enter the Intra Tax Rate:");
 
-            interTaxRate = Utils.getValidDoubleInput( 0, scanner, "Inter Tax Rate", "Enter the Inter Tax Rate: ");
+            interTaxRate = InputUtils.getValidDoubleInput( 0,  "Inter Tax Rate", "Enter the Inter Tax Rate: ");
         } else {
             intraTaxRate = 0;
             interTaxRate = 0;
@@ -72,23 +93,24 @@ public class ItemUtil
         
     }
 
-    public double getPriceInput () {
-        return Utils.getValidDoubleInput( 0, scanner, "Selling Price", "Enter the Item Selling Price:");
+    public double getPriceInput ()
+    {
+        return InputUtils.getValidDoubleInput( 0,  "Selling Price", "Enter the Item Selling Price:");
     }
 
-    public String getDescription (boolean isCreation) {
+    public String getDescription (boolean isCreation)
+    {
+        final String DESCRIPTION_REGEX = "[a-zA-Z0-9\\s'-#$%@!*&]+";
+
         String description = "";
-        if (isCreation) {
-            char yesOrNo = Utils.getValidOption( GlobalConstants.YES_NO_OPTIONS,
-                    scanner, "Description", "Want to Write Description\nY -> Yes\nN -> No");
 
-            if (yesOrNo == 'Y' || yesOrNo == 'y') {
+        if (isCreation)
+        {
+            description = InputUtils.getValidStringInput(DESCRIPTION_REGEX,  "Nice Saree", "Item Description", "Enter the Description:", false);
+        } else
+        {
 
-                description = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Nice Saree", "Item Description", "Enter the Description:", true);
-            }
-        } else {
-
-            description = Utils.getValidStringInput(GlobalConstants.NAME_REGEX, scanner, "Nice Saree", "Item Description", "Enter the Description:", true);
+            description = InputUtils.getValidStringInput(DESCRIPTION_REGEX,  "Nice Saree", "Item Description", "Enter the Description:", true);
         }
 
         return description;
@@ -102,77 +124,101 @@ public class ItemUtil
 
         int sortBy = -1;
 
-        do
+        sortModule:
         {
-            System.out.println("\nOption 1 -> Sort by Item Number");
-            System.out.println("\nOption 2 -> Sort by Item Price");
-            System.out.println("\nOption 3 -> Sort by Date");
+            while (true) {
+                System.out.println("\nOption 1 -> Sort by Item Number");
+                System.out.println("Option 2 -> Sort by Date");
+                System.out.println("Option 3 -> Sort by Item Price");
+                System.out.println("Option 4 -> Exit the Sorting Module");
 
-            sortBy = Utils.handleIntegerInputMisMatches(sortBy, -1, scanner);
+                System.out.println("\nEnter the Sort by Option: ");
 
-        } while (sortBy < 1 || sortBy > 3);
+                sortBy = InputUtils.handleIntegerInputMisMatches(sortBy, -1);
 
-        int sortingOrder = -1;
+                int sortingOrder = -1;
 
-        do
-        {
-            System.out.println("\nOption 1 -> Ascending Order");
-            System.out.println("\nOption 2 -> Descending Order");
+                if (sortBy >= 1 && sortBy <= 3){
+                    orderInput:
+                    {
+                        while (true) {
+                            System.out.println("\nOption 1 -> Ascending Order");
+                            System.out.println("Option 2 -> Descending Order");
 
-            sortingOrder = Utils.handleIntegerInputMisMatches(sortingOrder, -1, scanner);
+                            System.out.println("\nEnter the Sorting Order Option: ");
 
-        } while (sortingOrder < 1 || sortingOrder > 2);
+                            sortingOrder = InputUtils.handleIntegerInputMisMatches(sortingOrder, -1);
 
-        if (sortBy == 1)
-        {
-            List<Integer> helper = new ArrayList<>();
+                            switch (sortingOrder) {
+                                case 1, 2: {
+                                    break orderInput;
+                                }
+                                default: {
+                                    System.out.println("\nEnter a valid input (1 - 2)");
+                                    break;
+                                }
+                            }
+                        }
 
-            for (Item item : items)
-            {
-                helper.add(item.getItemNo());
+                    }
+                }
+
+                int finalSortingOrder = sortingOrder;
+
+                switch (sortBy) {
+                    case 1: {
+                        Comparator<Item> numberComparator = (a, b) -> {
+                            if (finalSortingOrder == 1)
+                            {
+                                return InputUtils.compareIntegers(a.getItemNo(), b.getItemNo());
+                            }
+                            return InputUtils.compareIntegers(b.getItemNo(), a.getItemNo());
+                        };
+
+                        sortingUtil.mergeSort(0, items.size() - 1, items, numberComparator);
+
+                        break;
+                    }
+                    case 2: {
+                        Comparator<Item> dateComparator = (a, b) -> {
+                            if (finalSortingOrder == 1) {
+                                return InputUtils.compareDates(a.getCreatedAt(), b.getCreatedAt());
+                            }
+                            return InputUtils.compareDates(b.getCreatedAt(), a.getCreatedAt());
+                        };
+
+                        sortingUtil.mergeSort(0, items.size() - 1, items, dateComparator);
+
+                        break;
+                    }
+                    case 3: {
+                        Comparator<Item> priceComparator = (a, b) -> {
+                            if (finalSortingOrder == 1)
+                            {
+                                return InputUtils.compareDoubles(a.getPrice(), b.getPrice());
+                            }
+                            return InputUtils.compareDoubles(b.getPrice(), a.getPrice());
+                        };
+
+                        sortingUtil.mergeSort(0, items.size() - 1, items, priceComparator);
+
+                        break;
+                    }
+                    case 4: {
+                        System.out.println("\nExiting sorting module...");
+                        break sortModule;
+                    }
+                    default: {
+                        System.out.println("\nEnter a valid option (1 - 4)");
+                        break;
+                    }
+                }
+
+                InputUtils.showItems(items);
+
             }
-
-            sortingUtil.mergeSort(0, items.size() - 1, items, helper);
-        }
-        else if (sortBy == 2)
-        {
-            List<Double> helper = new ArrayList<>();
-
-            for (Item item : items)
-            {
-                helper.add(item.getPrice());
-            }
-
-            sortingUtil.mergeSort(0, items.size() - 1, items, helper);
-        } else
-        {
-            List<LocalDate> helper = new ArrayList<>();
-
-            for (Item item : items)
-            {
-                helper.add(item.getCreatedAt());
-            }
-
-            sortingUtil.mergeSort(0, items.size() - 1, items, helper);
         }
 
-        if (sortingOrder == 2)
-        {
-            Utils.reverse(items);
-        }
-
-        Utils.showItems(items);
-
-    }
-
-    public static void reArrangeItemList (List<Item> items) {
-
-        for (int i = 0; i < items.size(); i++) {
-            Item item = items.get(i);
-            if (i + 1 != item.getItemNo()) {
-                item.setItemNo(i + 1);
-            }
-        }
     }
 
 }
