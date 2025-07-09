@@ -8,8 +8,6 @@ import java.util.List;
 public class SortingUtil
 {
 
-    // Handle using method
-    
     public SortingUtil () { }
 
     public <T> void mergeSort (int low, int high, List<T> sourceList, Comparator<T> comparator)

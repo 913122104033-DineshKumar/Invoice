@@ -1,6 +1,6 @@
 package invoice.utils;
 
-import invoice.src.Item;
+import invoice.models.Item;
 
 import java.util.*;
 
@@ -10,7 +10,7 @@ public class ItemUtil{
 
     public char getItemTypeInput ()
     {
-        return InputUtils.getToggleInput( 'g', "Item Type", "Enter the Item Type (g -> goods, any other key -> services)");
+        return InputUtils.collectToggleChoice( 'g', "Item Type", "Enter the Item Type (g -> goods, any other key -> services)");
     }
 
     public Character getItemUnitInput ()
@@ -63,7 +63,7 @@ public class ItemUtil{
 
         if (isCreation)
         {
-            conformationOption = InputUtils.getToggleInput(
+            conformationOption = InputUtils.collectToggleChoice(
                      'y', "Tax Option","Is Taxable applied (y -> yes, any other key -> no)");
         } else
         {
@@ -106,111 +106,6 @@ public class ItemUtil{
         description = InputUtils.getValidStringInput(DESCRIPTION_REGEX,  "Nice Saree", "Item Description", "Enter the Description:", false);
 
         return description;
-    }
-
-    public void sortingModule (List<Item> items)
-    {
-        SortingUtil sortingUtil = new SortingUtil();
-
-        System.out.println("\nEnter the choice based in which you want to sort the Items: ");
-
-        int sortBy = -1;
-
-        sortModule:
-        {
-            while (true) {
-                System.out.println("\nOption 1 -> Sort by Item Number");
-                System.out.println("Option 2 -> Sort by Date");
-                System.out.println("Option 3 -> Sort by Item Price");
-                System.out.println("Option 4 -> Exit the Sorting Module");
-
-                System.out.println("\nEnter the Sort by Option: ");
-
-                sortBy = InputUtils.handleIntegerInputMisMatches(sortBy, -1);
-
-                int sortingOrder = -1;
-
-                if (sortBy >= 1 && sortBy <= 3){
-                    orderInput:
-                    {
-                        while (true) {
-                            System.out.println("\nOption 1 -> Ascending Order");
-                            System.out.println("Option 2 -> Descending Order");
-
-                            System.out.println("\nEnter the Sorting Order Option: ");
-
-                            sortingOrder = InputUtils.handleIntegerInputMisMatches(sortingOrder, -1);
-
-                            switch (sortingOrder) {
-                                case 1, 2: {
-                                    break orderInput;
-                                }
-                                default: {
-                                    System.out.println("\nEnter a valid input (1 - 2)");
-                                    break;
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-                int finalSortingOrder = sortingOrder;
-
-                switch (sortBy) {
-                    case 1: {
-                        Comparator<Item> numberComparator = (a, b) -> {
-                            if (finalSortingOrder == 1)
-                            {
-                                return InputUtils.compareIntegers(a.getItemNo(), b.getItemNo());
-                            }
-                            return InputUtils.compareIntegers(b.getItemNo(), a.getItemNo());
-                        };
-
-                        sortingUtil.mergeSort(0, items.size() - 1, items, numberComparator);
-
-                        break;
-                    }
-                    case 2: {
-                        Comparator<Item> dateComparator = (a, b) -> {
-                            if (finalSortingOrder == 1) {
-                                return InputUtils.compareDates(a.getCreatedAt(), b.getCreatedAt());
-                            }
-                            return InputUtils.compareDates(b.getCreatedAt(), a.getCreatedAt());
-                        };
-
-                        sortingUtil.mergeSort(0, items.size() - 1, items, dateComparator);
-
-                        break;
-                    }
-                    case 3: {
-                        Comparator<Item> priceComparator = (a, b) -> {
-                            if (finalSortingOrder == 1)
-                            {
-                                return InputUtils.compareDoubles(a.getPrice(), b.getPrice());
-                            }
-                            return InputUtils.compareDoubles(b.getPrice(), a.getPrice());
-                        };
-
-                        sortingUtil.mergeSort(0, items.size() - 1, items, priceComparator);
-
-                        break;
-                    }
-                    case 4: {
-                        System.out.println("\nExiting sorting module...");
-                        break sortModule;
-                    }
-                    default: {
-                        System.out.println("\nEnter a valid option (1 - 4)");
-                        break;
-                    }
-                }
-
-                InputUtils.showItems(items);
-
-            }
-        }
-
     }
 
 }

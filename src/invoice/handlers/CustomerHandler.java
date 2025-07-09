@@ -1,7 +1,7 @@
 package invoice.handlers;
 
-import invoice.src.Address;
-import invoice.src.Customer;
+import invoice.models.Address;
+import invoice.models.Customer;
 import invoice.utils.CustomerUtil;
 import invoice.utils.InputUtils;
 import invoice.utils.SortingUtil;
@@ -161,7 +161,7 @@ public class CustomerHandler
         Customer selectedCustomer = customers.get(deleteCustomerNo);
 
         if (InputUtils.hasSingleElement(customers)) {
-            char confirmationOption = InputUtils.getToggleInput(  'y', "Delete Customer", "\nSince there is only one customer " + customers.get(deleteCustomerNo).getName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
+            char confirmationOption = InputUtils.collectToggleChoice(  'y', "Delete Customer", "\nSince there is only one customer " + customers.get(deleteCustomerNo).getName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
 
             if (confirmationOption == 'N' || confirmationOption == 'n') {
                 System.out.println("\nCustomer is not deleted");

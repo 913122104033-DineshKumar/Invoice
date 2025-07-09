@@ -1,7 +1,7 @@
-import invoice.src.Address;
-import invoice.src.Customer;
-import invoice.src.Invoice;
-import invoice.src.Item;
+import invoice.models.Address;
+import invoice.models.Customer;
+import invoice.models.Invoice;
+import invoice.models.Item;
 import invoice.handlers.InvoiceHandler;
 
 import java.time.LocalDate;

@@ -1,11 +1,9 @@
-package invoice.src;
+package invoice.models;
 
 import invoice.utils.ItemUtil;
 import invoice.utils.InputUtils;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Item
 {
@@ -13,7 +11,7 @@ public class Item
 
     // Primary Details
     private String itemId;
-    private int itemNo;
+    private final int itemNo;
     private char itemType;
     private char itemUnit;
     private final LocalDate createdAt;

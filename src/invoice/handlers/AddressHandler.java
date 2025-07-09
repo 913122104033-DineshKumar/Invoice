@@ -1,6 +1,6 @@
 package invoice.handlers;
 
-import invoice.src.Address;
+import invoice.models.Address;
 import invoice.utils.InputUtils;
 
 public class AddressHandler 
@@ -17,7 +17,7 @@ public class AddressHandler
 
     private char getShippingAddressInput()
     {
-        return InputUtils.getToggleInput( 'y', "Shipping Address Option", "Shipping Address\nDo you want Shipping Address, Same as Office Address (Or) Different from Office (y -> Same, any other key -> Different)");
+        return InputUtils.collectToggleChoice( 'y', "Shipping Address Option", "Shipping Address\nDo you want Shipping Address, Same as Office Address (Or) Different from Office (y -> Same, any other key -> Different)");
     }
     
     public Address createOrEdit (boolean isShippingAddress)
@@ -52,7 +52,7 @@ public class AddressHandler
         }
         
         address.setCountry(getCountry(previousCountry));
-        address.setStreet(getState(previousState));
+        address.setState(getState(previousState));
         address.setCity(getCity(previousCity));
         address.setStreet(getStreet(previousStreet));
         address.setPinCode(getPinCode(previousPinCode));

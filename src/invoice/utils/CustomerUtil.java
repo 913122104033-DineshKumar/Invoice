@@ -1,6 +1,6 @@
 package invoice.utils;
 
-import invoice.src.Customer;
+import invoice.models.Customer;
 import java.util.*;
 
 public class CustomerUtil
@@ -15,7 +15,7 @@ public class CustomerUtil
 
     public char getCustomerTypeInput()
     {
-        return InputUtils.getToggleInput( 'i', "Customer Type Input", "Enter the Customer Type (i -> Individual, any other key will be considered as -> Business):");
+        return InputUtils.collectToggleChoice( 'i', "Customer Type Input", "Enter the Customer Type (i -> Individual, any other key will be considered as -> Business):");
     }
 
     public String getCompanyNameInput()

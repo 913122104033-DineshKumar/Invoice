@@ -1,12 +1,8 @@
-package invoice.src;
+package invoice.models;
 
-import invoice.utils.CustomerUtil;
 import invoice.utils.InputUtils;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class Customer
 {

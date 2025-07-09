@@ -1,9 +1,9 @@
 package invoice.handlers;
 
-import invoice.src.Address;
-import invoice.src.Customer;
-import invoice.src.Invoice;
-import invoice.src.Item;
+import invoice.models.Address;
+import invoice.models.Customer;
+import invoice.models.Invoice;
+import invoice.models.Item;
 import invoice.utils.InvoiceUtil;
 import invoice.utils.SortingUtil;
 import invoice.utils.InputUtils;
@@ -21,11 +21,13 @@ public class InvoiceHandler
         CLOSED
     }
 
-    private final InvoiceUtil invoiceUtils;
+    private final InvoiceUtil invoiceUtil;
 
     public InvoiceHandler() {
-        this.invoiceUtils = new InvoiceUtil();
+        this.invoiceUtil = new InvoiceUtil();
     }
+
+    // Used in Main
 
     public Invoice create(List<Item> items, List<Customer> customers) {
         System.out.println("\nYou can add Invoice now...");
@@ -54,7 +56,7 @@ public class InvoiceHandler
 
         LocalDate date = LocalDate.now();
 
-        int paymentTerm = invoiceUtils.getPaymentTermInput();
+        int paymentTerm = invoiceUtil.getPaymentTermInput();
 
         Map<Item, Integer> itemTable = new TreeMap<>((item1, item2) -> Integer.compare(item1.getItemNo(), item2.getItemNo()));
         double subTotal = itemTableOperations(cus, null, items, itemTable, false);
@@ -63,20 +65,26 @@ public class InvoiceHandler
             return null;
         }
 
-        double discount = invoiceUtils.getDiscountInput(true);
+        Invoice invoice = new Invoice(cus, paymentTerm, itemTable, subTotal);
+
+        double discount = invoiceUtil.getDiscountInput(true);
+
+        invoice.setDiscount(discount);
 
         double invTotal = subTotal - ((subTotal / 100) * discount);
 
-        double shippingCharges = invoiceUtils.getShippingCharges(true);
+        double shippingCharges = invoiceUtil.getShippingCharges(true);
+
+        invoice.setShippingCharges(shippingCharges);
 
         invTotal += shippingCharges;
 
         double paymentReceived = 0;
 
-        char conformationOption = InputUtils.getToggleInput( 'y', "Payment Receival", "Have you received payment (y -> yes, any other key -> no)");
+        char conformationOption = InputUtils.collectToggleChoice( 'y', "Payment Receival", "Have you received payment (y -> yes, any other key -> no)");
 
         if (conformationOption == 'y') {
-            paymentReceived = invoiceUtils.getPaymentInput(invTotal);
+            paymentReceived = invoiceUtil.getPaymentInput(invTotal);
         }
 
         Status status;
@@ -86,7 +94,7 @@ public class InvoiceHandler
         } else if (paymentReceived > 0) {
             status = Status.PARTIALLY_PAID;
         } else {
-            char invoiceSentConfirmation = InputUtils.getToggleInput(  'y', "Invoice Sent", "Have you sent the invoice to customer? (y -> yes, any other key -> no)");
+            char invoiceSentConfirmation = InputUtils.collectToggleChoice(  'y', "Invoice Sent", "Have you sent the invoice to customer? (y -> yes, any other key -> no)");
 
             if (invoiceSentConfirmation == 'Y' || invoiceSentConfirmation == 'y') {
                 status = Status.SENT;
@@ -96,12 +104,16 @@ public class InvoiceHandler
 
         }
 
-        return new Invoice(cus, date, paymentTerm, itemTable, subTotal, discount, shippingCharges, invTotal, invTotal - paymentReceived, status);
+        invoice.setDueAmount(invTotal - paymentReceived);
+
+        invoice.setStatus(status);
+
+        return invoice;
     }
 
     public void update(Invoice invoice, List<Item> items, List<Customer> customers) {
 
-        if (invoiceUtils.showWarning(invoice, "update")) {
+        if (showWarning(invoice, "update")) {
             return;
         }
 
@@ -117,7 +129,7 @@ public class InvoiceHandler
                 System.out.println("\nEnter Option: ");
                 option = InputUtils.handleIntegerInputMisMatches(option, -1);
 
-                if (invoiceUtils.showWarning(invoice, "update")) {
+                if (showWarning(invoice, "update")) {
                     return;
                 }
 
@@ -149,14 +161,31 @@ public class InvoiceHandler
         System.out.println("\nUpdated Invoice Number: " + invoice.getInvNo());
     }
 
-    public List<Invoice> searchByCustomer(String customerName, List<Invoice> invoices, double limit) {
-        List<Invoice> invoicesOfCustomer = new ArrayList<>();
+    public List<Invoice> searchByCustomer(String customerName, List<Invoice> invoices, double limit)
+    {
+        List<Invoice> invoicesForCustomer = new ArrayList<>();
         for (Invoice invoice : invoices) {
             if (invoice.getCustomer().getName().equalsIgnoreCase(customerName) && invoice.getDueAmount() > limit) {
-                invoicesOfCustomer.add(invoice);
+                invoicesForCustomer.add(invoice);
             }
         }
-        return invoicesOfCustomer;
+
+        return invoicesForCustomer;
+    }
+
+    public void deleteInvoice (List<Invoice> invoices)
+    {
+        int deleteInvoiceNo = InputUtils.getInvoiceNumber(invoices);
+
+        Invoice selectedInvoice = invoices.get(deleteInvoiceNo);
+
+        if (showWarning(invoices.get(deleteInvoiceNo), "delete")) {
+            return;
+        }
+
+        System.out.println("Invoice of the " + selectedInvoice.getCustomer().getName() + " with Inv No " + selectedInvoice.getInvNo() + " is deleted");
+
+        invoices.remove(deleteInvoiceNo);
     }
 
     public void paymentModule(List<Invoice> invoices, List<Customer> customers) {
@@ -348,6 +377,112 @@ public class InvoiceHandler
 
     }
 
+    public void payInvoice(Invoice invoice) {
+
+        System.out.println("\n");
+
+        invoice.showInvoice();
+
+        System.out.println("\nOutstanding Amount: Rs." + invoice.getDueAmount());
+        System.out.println("Note: To cancel payment, Enter 0");
+
+        double paymentAmount = invoiceUtil.getPaymentInput(invoice.getDueAmount());
+
+        if (paymentAmount > 0) {
+            System.out.println("\nPayment Recorded: Rs." + paymentAmount);
+
+            invoice.setDueAmount(invoice.getDueAmount() - paymentAmount);
+
+            updateInvoiceStatusAfterPayment(invoice);
+
+            System.out.println("\n--- Updated Invoice---");
+
+            invoice.showInvoice();
+        } else {
+            System.out.println("\nNo payment recorded - Transaction cancelled and status remains in " + invoice.getStatus());
+        }
+    }
+
+    public void updateStatus (List<Invoice> invoices)
+    {
+        int invNo = InputUtils.getInvoiceNumber(invoices);
+
+        Invoice invoice = invoices.get(invNo);
+
+        System.out.println("\nThe invoice you chosen\n");
+
+        invoice.showInvoice();
+
+        int previousStatusOrdinal = invoice.getStatus().ordinal();
+
+        int statusOrdinal;
+
+
+        // To get a proper Status Code
+        status:
+        while (true) {
+            statusOrdinal = InputUtils.getValidRange(1, 4, "Invoice Status", "Enter the Status No:\n" + InputUtils.showStatuses()) - 1;
+
+            if (previousStatusOrdinal == statusOrdinal) {
+                System.out.println("\nThis invoice is already " + switch (statusOrdinal) {
+                    case 0 -> InvoiceHandler.Status.DRAFT;
+                    case 1 -> InvoiceHandler.Status.SENT;
+                    case 2 -> InvoiceHandler.Status.PARTIALLY_PAID;
+                    default -> InvoiceHandler.Status.CLOSED;
+                });
+                continue status;
+            }
+            break;
+        }
+
+        // Demotion of the statuses
+        if (previousStatusOrdinal > statusOrdinal) {
+
+            if (previousStatusOrdinal > InvoiceHandler.Status.SENT.ordinal())
+            {
+                char confirmationOption = InputUtils.collectToggleChoice(   'y',"Status Demotion", "You are trying to demote the Status" + "\nDo you want to continue this process, then if you had paid the amount for this invoice will be refunded and the due will increase by " + (invoice.getTotal() - invoice.getDueAmount()) + " (y -> yes, any other key -> no)");
+
+                if (confirmationOption == 'y')
+                {
+                    System.out.println("\nPaid amount " + (invoice.getTotal() - invoice.getDueAmount()) + " is refunded");
+
+                    invoice.setDueAmount(invoice.getTotal());
+
+                    invoice.setStatus(InvoiceHandler.Status.SENT);
+
+                    System.out.println("\nStatus is changed from " + InvoiceHandler.Status.values()[previousStatusOrdinal] + " to " + InvoiceHandler.Status.SENT);
+                } else
+                {
+                    System.out.println("\nStatus is not updated");
+                }
+            } else
+            {
+                char confirmationOption = InputUtils.collectToggleChoice(  'y',"Status Demotion", "Do you want the Status from SENT to DRAFT (y -> yes, any other key -> no)");
+
+                if (confirmationOption == 'y')
+                {
+                    System.out.println("\nStatus changed from SENT to DRAFT\n");
+
+                    invoice.setStatus(InvoiceHandler.Status.DRAFT);
+                }
+            }
+            return;
+        }
+
+        // Actual status Changing
+        if (statusOrdinal == InvoiceHandler.Status.SENT.ordinal())
+        {
+            invoice.setStatus(InvoiceHandler.Status.SENT);
+
+            System.out.println("\nINVOICE #" + invoice.getInvNo() + " Status updated from " + InvoiceHandler.Status.values()[previousStatusOrdinal] + " to " + invoice.getStatus());
+            return;
+        }
+
+        payInvoice(invoice);
+    }
+
+    // Internal use
+
     private void payOutstandingInvoices(List<Invoice> customerInvoices) {
         double totalDueAmount = 0;
 
@@ -362,7 +497,7 @@ public class InvoiceHandler
         System.out.println("\n TOTAL AMOUNT DUE: Rs." + String.format("%.2f", totalDueAmount));
         System.out.println("\nYou can pay the full amount or partial amount.Then you can distribute the amount for outstanding invoices");
 
-        double totalAmountPaid = invoiceUtils.getPaymentInput(totalDueAmount);
+        double totalAmountPaid = invoiceUtil.getPaymentInput(totalDueAmount);
 
         if (totalAmountPaid == 0) {
             System.out.println("\nPayment cancelled. No invoices updated.");
@@ -411,7 +546,7 @@ public class InvoiceHandler
                             System.out.println("\nInsufficient funds! Available: Rs." + String.format("%.2f", totalAmountPaid));
                         }
 
-                        amountPaidForThisInvoice = invoiceUtils.getPaymentInput(Math.min(invoice.getDueAmount(), totalAmountPaid));
+                        amountPaidForThisInvoice = invoiceUtil.getPaymentInput(Math.min(invoice.getDueAmount(), totalAmountPaid));
 
                         if (amountPaidForThisInvoice > 0)
                         {
@@ -456,34 +591,8 @@ public class InvoiceHandler
     }
 
     private char isFullyPaid() {
-        return InputUtils.getToggleInput( 'y', "Amount", "\nWant to pay the full amount (y -> yes, any other key -> no)");
+        return InputUtils.collectToggleChoice( 'y', "Amount", "\nWant to pay the full amount (y -> yes, any other key -> no)");
 
-    }
-
-    public void payInvoice(Invoice invoice) {
-
-        System.out.println("\n");
-
-        invoice.showInvoice();
-
-        System.out.println("\nOutstanding Amount: Rs." + invoice.getDueAmount());
-        System.out.println("Note: To cancel payment, Enter 0");
-
-        double paymentAmount = invoiceUtils.getPaymentInput(invoice.getDueAmount());
-
-        if (paymentAmount > 0) {
-            System.out.println("\nPayment Recorded: Rs." + paymentAmount);
-
-            invoice.setDueAmount(invoice.getDueAmount() - paymentAmount);
-
-            updateInvoiceStatusAfterPayment(invoice);
-
-            System.out.println("\n--- Updated Invoice---");
-
-            invoice.showInvoice();
-        } else {
-            System.out.println("\nNo payment recorded - Transaction cancelled and status remains in " + invoice.getStatus());
-        }
     }
 
     private void updateInvoiceStatusAfterPayment(Invoice invoice) {
@@ -511,7 +620,7 @@ public class InvoiceHandler
                 System.out.println("\nEnter Option: ");
                 option = InputUtils.handleIntegerInputMisMatches(option, -1);
 
-                if (invoiceUtils.showWarning(invoice, "update")) {
+                if (showWarning(invoice, "update")) {
                     return;
                 }
 
@@ -544,7 +653,7 @@ public class InvoiceHandler
                     case 2: {
                         int previousPaymentTerm = invoice.getPaymentTerm();
 
-                        int paymentTerm = invoiceUtils.getPaymentTermInput();
+                        int paymentTerm = invoiceUtil.getPaymentTermInput();
 
                         if (previousPaymentTerm == paymentTerm)
                         {
@@ -582,7 +691,7 @@ public class InvoiceHandler
                         if (!customerCreated) {
                             InputUtils.showCustomers(customers);
 
-                            cusNo = invoiceUtils.getSerialNumberInput(1, customers.size(), "Customer") - 1;
+                            cusNo = invoiceUtil.getSerialNumberInput(1, customers.size(), "Customer") - 1;
                         }
 
                         if (previousCustomerName.equalsIgnoreCase(customers.get(cusNo).getName()))
@@ -633,7 +742,7 @@ public class InvoiceHandler
                 System.out.println("\nEnter Option: ");
                 option = InputUtils.handleIntegerInputMisMatches(option, -1);
 
-                if (invoiceUtils.showWarning(invoice, "update")) {
+                if (showWarning(invoice, "update")) {
                     return;
                 }
 
@@ -642,7 +751,7 @@ public class InvoiceHandler
 
                         double previousDiscount = invoice.getDiscount();
 
-                        double nDiscount = invoiceUtils.getDiscountInput(false);
+                        double nDiscount = invoiceUtil.getDiscountInput(false);
 
                         invoice.setDiscount(nDiscount);
 
@@ -664,7 +773,7 @@ public class InvoiceHandler
 
                         double previousShippingCharges = invoice.getShippingCharges();
 
-                        double shippingCharges = invoiceUtils.getShippingCharges(false);
+                        double shippingCharges = invoiceUtil.getShippingCharges(false);
 
                         double total = invoice.getTotal();
 
@@ -760,6 +869,7 @@ public class InvoiceHandler
                         if (itemTable.isEmpty()) {
 
                             System.out.println("\nNo items added yet");
+                            break;
                         }
 
                         int itemIndex = getItemIndex(itemTable, items, itemHandler);
@@ -782,6 +892,12 @@ public class InvoiceHandler
 
                     case 3:
                     {
+                        if (itemTable.isEmpty())
+                        {
+                            System.out.println("\nNo items added yet");
+                            break;
+                        }
+
                         int itemIndex = getItemIndex(itemTable, items, itemHandler);
 
                         Item item = items.get(itemIndex);
@@ -1015,6 +1131,24 @@ public class InvoiceHandler
                 invoice.setDueAmount(invoice.getDueAmount() - (total - invoice.getTotal()));
             }
         }
+    }
+
+    private boolean showWarning(Invoice invoice, String module)
+    {
+        if (invoice.getStatus().equals(InvoiceHandler.Status.CLOSED) || invoice.getStatus().equals(InvoiceHandler.Status.PARTIALLY_PAID))
+        {
+            System.out.println("\nSince, invoice is closed or partially paid, it's not recommended to " + module + "...");
+
+            char conformationOption = InputUtils.collectToggleChoice(   'y', "Invoice updation option",  "Still you want to " + module + " (y -> yes, any other key -> no)");
+
+            if (conformationOption != 'y')
+            {
+                System.out.println("\nNo " + module + " has been done");
+                return true;
+            }
+
+        }
+        return false;
     }
 
 }

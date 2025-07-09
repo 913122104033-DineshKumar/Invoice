@@ -1,9 +1,9 @@
 package invoice.utils;
 
 import invoice.handlers.InvoiceHandler;
-import invoice.src.Customer;
-import invoice.src.Invoice;
-import invoice.src.Item;
+import invoice.models.Customer;
+import invoice.models.Invoice;
+import invoice.models.Item;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -17,6 +17,8 @@ public class InputUtils
     {
         System.out.println("-".repeat(repeatTime));
     }
+
+    // Scanner Creator and Destroyer
 
     public static void createScanner ()
     {
@@ -33,6 +35,8 @@ public class InputUtils
             scanner.close();
         }
     }
+
+    // Show (Or) Print Methods
 
     public static void showItems (List<Item> items)
     {
@@ -67,7 +71,7 @@ public class InputUtils
         System.out.println("-".repeat(noOfHyphens));
 
         // Print header
-        System.out.printf("! %-10s | %15s | %-25s | %-15s | %-15s |%n", "Serial No", "Customer Id", "Customer Name", "Customer Email", "Created At");
+        System.out.printf("! %-10s | %15s | %-25s | %-15s | %-15s |%n", "Serial No", "Customer No", "Customer Name", "Customer Email", "Created At");
 
         System.out.println("-".repeat(noOfHyphens));
 
@@ -78,7 +82,7 @@ public class InputUtils
 
             System.out.printf("| %-10d | %10s | %-25s | %-15s | %-15s |%n",
                     serialNo + 1,
-                    customer.getCustomerId(),
+                    customer.getCusNo(),
                     customer.getName(),
                     customer.getEmail(),
                     customer.getCreatedAt());
@@ -121,14 +125,13 @@ public class InputUtils
         StringBuilder sb = new StringBuilder("Status\n");
         for (InvoiceHandler.Status s : InvoiceHandler.Status.values())
         {
-            sb.append(s.ordinal() + 1).append(" -> ").append(s.name());
+            sb.append(s.ordinal() + 1).append(" -> ").append(s.name()).append("\n");
         }
         return sb.toString().trim();
     }
 
-
     // Validation Methods
-    public static char getToggleInput ( char key, String fieldName, String prompt)
+    public static char collectToggleChoice(char key, String fieldName, String prompt)
     {
         char inputOption;
         do
@@ -243,6 +246,14 @@ public class InputUtils
         return inputValue;
     }
 
+    // Error Message for Improper regex
+    public static String regexMatchFailedError (String fieldName, String example)
+    {
+        return "Your " + fieldName + " didn't match with the validation regex.\n\n" + "Example: " + example + "\n\nEnter the input again, refer the above one:";
+    }
+
+    // Handles the app from getting any Exception
+
     public static char handleCharacterInput (String fieldName) {
         char inputOption = '\0';
         try
@@ -264,10 +275,6 @@ public class InputUtils
         return Character.toLowerCase(inputOption);
     }
 
-    public static String regexMatchFailedError (String fieldName, String example)
-    {
-        return "Your " + fieldName + " didn't match with the validation regex.\n\n" + "Example: " + example + "\n\nEnter the input again, refer the above one:";
-    }
 
     private static double handleDoubleInput(double value, double defaultValue) {
         double inputValue = value;
@@ -319,47 +326,24 @@ public class InputUtils
         return inputValue;
     }
 
-    public static int compareDates (LocalDate date1, LocalDate date2)
+    public static String handleNullStrings (String s)
     {
-
-        if (date1.getYear() < date2.getYear())
-        {
-            return 1;
-        }
-        else if (date1.getYear() > date2.getYear())
-        {
-            return -1;
-        } else
-        {
-            if (date1.getMonthValue() < date2.getMonthValue())
-            {
-                return 1;
-            }
-            else if (date1.getMonthValue() > date2.getMonthValue())
-            {
-                return -1;
-            } else
-            {
-                if (date1.getDayOfMonth() <= date2.getDayOfMonth())
-                {
-                    return 1;
-                } else
-                {
-                    return -1;
-                }
-            }
-        }
+        return s == null ? "NONE" : s;
     }
+
+    // Internal Messages
 
     public static<T> boolean hasSingleElement (List<T> list)
     {
         return list.size() == 1;
     }
 
-    public static void showMessageOnlyOneDataIsThere (String module, String name)
+    private static void showSingleItemMessage (String module, String name)
     {
         System.out.println("\nThere is only one " + module + ": " + name);
     }
+
+    // Input getters
 
     public static int getCustomerNumber (List<Customer> customers)
     {
@@ -367,7 +351,7 @@ public class InputUtils
 
         if (InputUtils.hasSingleElement(customers))
         {
-            InputUtils.showMessageOnlyOneDataIsThere("Customer", customers.get(0).getName());
+            InputUtils.showSingleItemMessage("Customer", customers.get(0).getName());
         }
         else
         {
@@ -385,7 +369,7 @@ public class InputUtils
 
         if (InputUtils.hasSingleElement(items))
         {
-            InputUtils.showMessageOnlyOneDataIsThere("Item", items.get(0).getItemName());
+            InputUtils.showSingleItemMessage("Item", items.get(0).getItemName());
         }
         else
         {
@@ -403,7 +387,7 @@ public class InputUtils
 
         if (InputUtils.hasSingleElement(invoices))
         {
-            InputUtils.showMessageOnlyOneDataIsThere("Invoice for ", invoices.get(0).getCustomer().getName());
+            InputUtils.showSingleItemMessage("Invoice for ", invoices.get(0).getCustomer().getName());
         }
         else
         {
@@ -415,16 +399,12 @@ public class InputUtils
         return invNo;
     }
 
-    public static String handleNullStrings (String s)
-    {
-        return s == null ? "NONE" : s;
-    }
-
     private static int getSerialNumberInput (int upperLimit, String fieldName)
     {
         return InputUtils.getValidRange( 1, upperLimit, fieldName+ " Number", "Enter the " + fieldName + " Serial Number from the table: ");
     }
 
+    // Comparisons
     public static int compareIntegers(int value1, int value2)
     {
 
@@ -466,6 +446,38 @@ public class InputUtils
         }
 
         return -1;
+    }
+
+    public static int compareDates (LocalDate date1, LocalDate date2)
+    {
+
+        if (date1.getYear() < date2.getYear())
+        {
+            return 1;
+        }
+        else if (date1.getYear() > date2.getYear())
+        {
+            return -1;
+        } else
+        {
+            if (date1.getMonthValue() < date2.getMonthValue())
+            {
+                return 1;
+            }
+            else if (date1.getMonthValue() > date2.getMonthValue())
+            {
+                return -1;
+            } else
+            {
+                if (date1.getDayOfMonth() <= date2.getDayOfMonth())
+                {
+                    return 1;
+                } else
+                {
+                    return -1;
+                }
+            }
+        }
     }
 
 }

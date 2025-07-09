@@ -1,4 +1,4 @@
-package invoice.src;
+package invoice.models;
 
 import invoice.handlers.InvoiceHandler;
 import invoice.utils.InputUtils;
@@ -11,7 +11,7 @@ public class Invoice
     private Customer customer;
 
     private static int totalInvoices = 1;
-    private int invNo;
+    private final int invNo;
     private final LocalDate createdAt;
     private int paymentTerm;
     private Map<Item, Integer> itemTable;
@@ -22,9 +22,15 @@ public class Invoice
     private double dueAmount;
     private InvoiceHandler.Status status;
 
-    public Invoice ()
+    public Invoice (Customer customer, int paymentTerm, Map<Item, Integer> itemTable, double subTotal)
     {
+        this.customer = customer;
         this.createdAt = LocalDate.now();
+        this.paymentTerm = paymentTerm;
+        this.itemTable = itemTable;
+        this.subTotal = subTotal;
+        this.invNo = totalInvoices;
+        totalInvoices++;
     }
 
     public Invoice(Customer customer, LocalDate createdAt, int paymentTerm, Map<Item, Integer> itemTable, double subTotal, double discount, double shippingCharges, double total, double dueAmount, InvoiceHandler.Status status)
@@ -50,10 +56,6 @@ public class Invoice
 
     public void setCustomer (Customer customer) {
         this.customer = customer;
-    }
-
-    public static int getTotalInvoices() {
-        return totalInvoices;
     }
 
     public LocalDate getCreatedAt()
@@ -115,10 +117,6 @@ public class Invoice
 
     public int getInvNo() {
         return this.invNo;
-    }
-
-    public void setInvNo(int invNo) {
-        this.invNo = invNo;
     }
 
     public double getSubTotal() {

@@ -1,6 +1,6 @@
 package invoice.handlers;
 
-import invoice.src.Item;
+import invoice.models.Item;
 import invoice.utils.InputUtils;
 import invoice.utils.ItemUtil;
 import invoice.utils.SortingUtil;
@@ -381,7 +381,7 @@ public class ItemHandler
         Item selectedItem = items.get(deleteItemNo);
 
         if (InputUtils.hasSingleElement(items)) {
-            char confirmationOption = InputUtils.getToggleInput( 'y',"Delete Customer", "\nSince there is only one item " + selectedItem.getItemName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
+            char confirmationOption = InputUtils.collectToggleChoice( 'y',"Delete Customer", "\nSince there is only one item " + selectedItem.getItemName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
 
             if (confirmationOption == 'N' || confirmationOption == 'n') {
                 System.out.println("\nItem is not deleted");

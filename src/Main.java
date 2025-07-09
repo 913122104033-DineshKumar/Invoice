@@ -1,9 +1,9 @@
 import invoice.handlers.CustomerHandler;
 import invoice.handlers.InvoiceHandler;
 import invoice.handlers.ItemHandler;
-import invoice.src.Customer;
-import invoice.src.Invoice;
-import invoice.src.Item;
+import invoice.models.Customer;
+import invoice.models.Invoice;
+import invoice.models.Item;
 import invoice.utils.*;
 
 import java.util.*;
@@ -336,17 +336,7 @@ public class Main {
                             break;
                         }
 
-                        int deleteInvoiceNo = InputUtils.getInvoiceNumber(invoices);
-
-                        Invoice selectedInvoice = invoices.get(deleteInvoiceNo);
-
-                        if (invoiceUtils.showWarning(invoices.get(deleteInvoiceNo), "delete")) {
-                            break;
-                        }
-
-                        System.out.println("Invoice of the " + selectedInvoice.getCustomer().getName() + " with Inv No " + selectedInvoice.getInvNo() + " is deleted");
-
-                        invoices.remove(deleteInvoiceNo);
+                        invoiceHandler.deleteInvoice(invoices);
 
                         break;
                     }
@@ -366,80 +356,7 @@ public class Main {
                             break;
                         }
 
-                        int invNo = InputUtils.getInvoiceNumber(invoices);
-
-                        Invoice invoice = invoices.get(invNo);
-
-                        System.out.println("\nThe invoice you chosen\n");
-
-                        invoice.showInvoice();
-
-                        int previousStatusOrdinal = invoice.getStatus().ordinal();
-
-                        int statusOrdinal;
-
-
-                        // To get a proper Status Code
-                        status:
-                        while (true) {
-                            statusOrdinal = InputUtils.getValidRange(1, 4, "Invoice Status", "Enter the Status No:\n" + InputUtils.showStatuses()) - 1;
-
-                            if (previousStatusOrdinal == statusOrdinal) {
-                                System.out.println("\nThis invoice is already " + switch (statusOrdinal) {
-                                    case 0 -> InvoiceHandler.Status.DRAFT;
-                                    case 1 -> InvoiceHandler.Status.SENT;
-                                    case 2 -> InvoiceHandler.Status.PARTIALLY_PAID;
-                                    default -> InvoiceHandler.Status.CLOSED;
-                                });
-                                continue status;
-                            }
-                            break;
-                        }
-
-                        // Demotion of the statuses
-                        if (previousStatusOrdinal > statusOrdinal) {
-
-                            if (statusOrdinal > InvoiceHandler.Status.SENT.ordinal())
-                            {
-                                char confirmationOption = InputUtils.getToggleInput(   'y',"Status Demotion", "You are trying to demote the Status" + "\nDo you want to continue this process, then if you had paid the amount for this invoice will be refunded and the due will increase by " + (invoice.getTotal() - invoice.getDueAmount()) + " (y -> yes, any other key -> no)");
-
-                                if (confirmationOption == 'y')
-                                {
-                                    System.out.println("\nPaid amount " + (invoice.getTotal() - invoice.getDueAmount()) + " is refunded");
-
-                                    invoice.setDueAmount(invoice.getTotal());
-
-                                    invoice.setStatus(InvoiceHandler.Status.SENT);
-
-                                    System.out.println("\nStatus is changed from " + InvoiceHandler.Status.values()[previousStatusOrdinal] + " to " + InvoiceHandler.Status.SENT);
-                                } else
-                                {
-                                    System.out.println("\nStatus is not updated");
-                                }
-                            } else
-                            {
-                                char confirmationOption = InputUtils.getToggleInput(  'y',"Status Demotion", "Do you want the Status from SENT to DRAFT (y -> yes, any other key -> no)");
-
-                                if (confirmationOption == 'y')
-                                {
-                                    System.out.println("\nStatus changed from SENT to DRAFT\n");
-
-                                    invoice.setStatus(InvoiceHandler.Status.DRAFT);
-                                }
-                            }
-                            break;
-                        }
-
-                        // Actual status Changing
-                        if (statusOrdinal == InvoiceHandler.Status.SENT.ordinal())
-                        {
-                            invoice.setStatus(InvoiceHandler.Status.SENT);
-
-                            System.out.println("\nINVOICE #" + invoice.getInvNo() + " Status updated from " + InvoiceHandler.Status.values()[previousStatusOrdinal] + " to " + invoice.getStatus());
-                            break;
-                        }
-
-                        invoiceHandler.payInvoice(invoice);
+                        invoiceHandler.updateStatus(invoices);
 
                         break;
                     }
@@ -476,10 +393,6 @@ public class Main {
             return true;
         }
         return false;
-    }
-
-    private static void updateInvoiceWithPaymentValidation(boolean hasPaymentProgressed, Invoice invoice, int targetStatus, boolean isClosingAttempt) {
-
     }
 
 }
