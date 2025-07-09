@@ -699,6 +699,8 @@ public class InvoiceHandler
     private double itemTableOperations(Customer customer, Invoice invoice, List<Item> items, Map<Item, Integer> itemTable, boolean isUpdation) {
         int option = -1;
 
+        ItemHandler itemHandler = new ItemHandler();
+
         itemTableUpdation:
         {
             while (true) {
@@ -724,7 +726,7 @@ public class InvoiceHandler
                         boolean itemCreated = false;
 
                         if (items.isEmpty()) {
-                            Item item = Item.create( items);
+                            Item item = itemHandler.create( items);
 
                             items.add(item);
 
@@ -760,7 +762,7 @@ public class InvoiceHandler
                             System.out.println("\nNo items added yet");
                         }
 
-                        int itemIndex = getItemIndex(itemTable, items);
+                        int itemIndex = getItemIndex(itemTable, items, itemHandler);
                         Item item = items.get(itemIndex);
                         itemTable.remove(item);
 
@@ -780,7 +782,7 @@ public class InvoiceHandler
 
                     case 3:
                     {
-                        int itemIndex = getItemIndex(itemTable, items);
+                        int itemIndex = getItemIndex(itemTable, items, itemHandler);
 
                         Item item = items.get(itemIndex);
 
@@ -880,7 +882,7 @@ public class InvoiceHandler
         boolean withinState = state.equalsIgnoreCase("Tamil Nadu");
 
         for (Item cartItem : itemTable.keySet()) {
-            double cost = cartItem.getRate(itemTable.get(cartItem), withinState);
+            double cost = getRate(cartItem, itemTable.get(cartItem), withinState);
             subTotal += cost;
         }
 
@@ -899,7 +901,17 @@ public class InvoiceHandler
         return subTotal;
     }
 
-    private int getItemIndex(Map<Item, Integer> itemTable, List<Item> items) {
+    private double getRate (Item item, int quantity, boolean withinState) {
+        double baseRate = item.getPrice();
+        if (withinState) {
+            baseRate += (item.getPrice() / 100) * item.getIntraTaxRate();
+        } else {
+            baseRate += (item.getPrice() / 100) * item.getInterTaxRate();
+        }
+        return baseRate * quantity;
+    }
+
+    private int getItemIndex(Map<Item, Integer> itemTable, List<Item> items, ItemHandler itemHandler) {
         int removalItemNo = 0;
 
         int itemIndex;
@@ -913,7 +925,7 @@ public class InvoiceHandler
 
                 removalItemNo = InputUtils.handleIntegerInputMisMatches(removalItemNo, -1);
 
-                itemIndex = Item.searchByItemNo(removalItemNo, items);
+                itemIndex = itemHandler.searchByItemNo(removalItemNo, items);
 
                 if (itemIndex != -1 && itemTable.containsKey(items.get(itemIndex))) {
                     break removalItem;

@@ -1,5 +1,6 @@
 import invoice.handlers.CustomerHandler;
 import invoice.handlers.InvoiceHandler;
+import invoice.handlers.ItemHandler;
 import invoice.src.Customer;
 import invoice.src.Invoice;
 import invoice.src.Item;
@@ -84,6 +85,8 @@ public class Main {
     private static void itemModule(List<Item> items){
         int option = -1;
 
+        ItemHandler itemHandler = new ItemHandler();
+
         itemMenu:
         {
             while (true) {
@@ -99,7 +102,7 @@ public class Main {
 
                 switch (option) {
                     case 1: {
-                        Item item = Item.create(items);
+                        Item item = itemHandler.create(items);
                         items.add(item);
 
                         System.out.println("\n");
@@ -113,13 +116,8 @@ public class Main {
                             break;
                         }
 
-                        int itemNo = InputUtils.getItemNumber(items);
+                        itemHandler.update(items);
 
-                        Item updatedItem = items.get(itemNo);
-                        updatedItem.update(items);
-
-                        System.out.println("\n");
-                        updatedItem.showItem();
                         break;
                     }
 
@@ -129,18 +127,8 @@ public class Main {
                             break;
                         }
 
-                        final String NAME_REGEX = "[a-zA-Z0-9\\s'-]+";
+                        itemHandler.searchByName(items);
 
-                        String itemName = InputUtils.getValidStringInput(NAME_REGEX, "Punam Saree", "Item Name", "Enter Item Name (Eg. Punam Saree):", true);
-
-                        List<Item> itemsFound = Item.searchByName(itemName, items);
-
-                        if (!itemsFound.isEmpty()) {
-                            System.out.println("\n");
-                            InputUtils.showItems(itemsFound);
-                        } else {
-                            System.out.println("\nNo item found with this name");
-                        }
                         break;
                     }
 
@@ -150,22 +138,7 @@ public class Main {
                             break;
                         }
 
-                        int deleteItemNo = InputUtils.getItemNumber(items);
-
-                        Item selectedItem = items.get(deleteItemNo);
-
-                        if (InputUtils.hasSingleElement(items)) {
-                            char confirmationOption = InputUtils.getToggleInput( 'y',"Delete Customer", "\nSince there is only one item " + selectedItem.getItemName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
-
-                            if (confirmationOption == 'N' || confirmationOption == 'n') {
-                                System.out.println("\nItem is not deleted");
-                                break;
-                            }
-                        }
-
-                        System.out.println("\n" + selectedItem.getItemName() + " is deleted successfully...");
-
-                        items.remove(deleteItemNo);
+                        itemHandler.deleteItem(items);
 
                         break;
                     }
@@ -177,7 +150,7 @@ public class Main {
                             break;
                         }
 
-                        Item.sortItems(items);
+                        itemHandler.sortingModule(items);
 
                         break;
                     }

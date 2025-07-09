@@ -1,26 +1,504 @@
 package invoice.handlers;
 
 import invoice.src.Item;
+import invoice.utils.InputUtils;
 import invoice.utils.ItemUtil;
+import invoice.utils.SortingUtil;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ItemHandler
 {
     private ItemUtil itemUtil;
 
-    public ItemHandler () {  }
+    public ItemHandler () { 
+        this.itemUtil = new ItemUtil();
+    }
 
-    private boolean itemNameAlreadyExists (String name, List<Item> items)
+    public Item create (List<Item> items)
     {
-        for (Item item : items)
+        if (itemUtil == null) {
+            itemUtil = new ItemUtil();
+        }
+
+        System.out.println("\nYou can add Item now");
+
+        // Item Type Input
+        char itemType = itemUtil.getItemTypeInput();
+
+        // Item Unit Input
+        char itemUnit = itemUtil.getItemUnitInput();
+
+        // Item Name Input
+        String itemName = itemUtil.getItemNameInput(items);
+
+        double price = itemUtil.getPriceInput();
+        
+        Item item = new Item(itemType, itemUnit, LocalDate.now(), itemName, price);
+
+        String nDescription = itemUtil.getDescription();
+        
+        item.setDescription(nDescription);
+
+        double[] taxableDetails = itemUtil.getTaxableInput(true, false);
+        
+        item.setIsTaxable(taxableDetails[0] == 1);
+        item.setIntraTaxRate(taxableDetails[1]);
+        item.setInterTaxRate(taxableDetails[2]);
+
+        item.setItemId(item.generateItemId());
+
+        return item;
+    }
+
+    public void update (List<Item> items)
+    {
+        int itemNo = InputUtils.getItemNumber(items);
+
+        Item item = items.get(itemNo);
+
+        int option = -1;
+
+        itemUpdation:
         {
-            if (item.getItemName().equalsIgnoreCase(name))
+            while (true)
             {
-                return true;
+                System.out.println("\nOption 1 -> Updating Item Details");
+                System.out.println("Option 2 -> Updating Item Tax Details");
+                System.out.println("Option 3 -> To exit the update");
+                System.out.println("-".repeat(30));
+
+                System.out.println("\nEnter the option: ");
+
+                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+
+
+                switch (option)
+                {
+                    case 1:
+                    {
+                        updateItemDetails(item, items);
+                        break;
+                    }
+
+                    case 2:
+                    {
+                        updateItemTaxes(item);
+                        break;
+                    }
+
+                    case 3:
+                    {
+                        System.out.println("\nExiting the Item Updation Module...");
+                        break itemUpdation;
+                    }
+
+                    default:
+                    {
+                        System.out.println("\nEnter a valid input (1 - 3)...");
+                        break;
+                    }
+                }
             }
         }
-        return false;
+
+        System.out.println("\nUpdated Item Details\n");
+        item.showItem();
+
     }
+
+    private void updateItemDetails (Item item, List<Item> items)
+    {
+        int option = -1;
+
+        itemDetailsUpdation:
+        {
+            while (true)
+            {
+                System.out.println("\nOption 1 -> Updating Item Type");
+                System.out.println("Option 2 -> Updating Item Name");
+                System.out.println("Option 3 -> Updating Item Unit");
+                System.out.println("Option 4 -> Updating Item Price");
+                System.out.println("Option 5 -> Updating Item Description");
+                System.out.println("Option 6 -> For exit");
+                System.out.println("-".repeat(30));
+
+                System.out.println("\nEnter the option: ");
+                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+
+                switch (option)
+                {
+
+                    case 1:
+                    {
+                        char previousItemType = item.getItemType();
+
+                        char nItemType = itemUtil.getItemTypeInput();
+
+                        if (previousItemType == nItemType)
+                        {
+                            System.out.println("\nYou entered the same Item type again, so no updation is done");
+                            break;
+                        }
+
+                        item.setItemType(nItemType);
+
+                        System.out.println("\nItem's Type updated from " + item.getItemType(previousItemType) + " to " + item.getItemType(nItemType));
+                        break;
+                    }
+
+                    case 2:
+                    {
+                        String previousName = InputUtils.handleNullStrings(item.getItemName());
+
+                        String updatedItemName = itemUtil.getItemNameInput(items);
+
+                        if (previousName.equalsIgnoreCase(updatedItemName))
+                        {
+                            System.out.println("\nYou entered the same Item Name again, so no updation is done");
+                            break;
+                        }
+
+                        item.setItemName(updatedItemName);
+
+                        System.out.println("\nItem's Name updated from " + previousName + " to " + updatedItemName);
+
+                        break;
+                    }
+
+                    case 3:
+                    {
+                        char previousItemUnit = item.getItemUnit();
+
+                        char nItemUnit = itemUtil.getItemUnitInput();
+
+                        if (previousItemUnit == nItemUnit)
+                        {
+                            System.out.println("\nYou entered the same Item Unit again, so no updation is done");
+                            break;
+                        }
+
+                        item.setItemUnit(nItemUnit);
+
+                        System.out.println("\nItem's Unit updated from " + item.getItemUnit(previousItemUnit) + " to " + item.getItemUnit(nItemUnit));
+
+                        break;
+                    }
+
+                    case 4:
+                    {
+                        double previousPrice = item.getPrice();
+
+                        double updatedPrice = itemUtil.getPriceInput();
+
+                        if (previousPrice == updatedPrice)
+                        {
+                            System.out.println("\nYou entered the same Item price again, so no updation is done");
+                            break;
+                        }
+
+                        item.setPrice(updatedPrice);
+
+                        System.out.println("\nItem's Price updated from " + previousPrice + " to " + updatedPrice);
+                        break;
+                    }
+
+                    case 5:
+                    {
+                        String previousDescription = InputUtils.handleNullStrings(item.getDescription());
+
+                        String nDescription = itemUtil.getDescription();
+
+                        if (previousDescription.equalsIgnoreCase(nDescription))
+                        {
+                            System.out.println("\nYou entered the same Description again, so no updation is done");
+                            break;
+                        }
+
+                        item.setDescription(nDescription);
+
+                        System.out.println("\nItem's Description updated from " + previousDescription + " to " + nDescription);
+                        break;
+                    }
+
+                    case 6:
+                    {
+                        System.out.println("\nExiting the Item Details Updation Module...");
+                        break itemDetailsUpdation;
+                    }
+
+                    default:
+                    {
+                        System.out.println("\nEnter a valid input (1 - 6)");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateItemTaxes (Item item) {
+        int option = -1;
+
+        itemTaxUpdation:
+        {
+            while (true)
+            {
+                System.out.println("\nOption 1 -> Updating Taxable");
+                System.out.println("Option 2 -> Updating Intra State Tax Rate");
+                System.out.println("Option 3 -> Updating Inter State Tax Rate");
+                System.out.println("Option 4 -> For exit");
+
+                System.out.println("\nEnter Option: ");
+
+                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+
+                switch (option)
+                {
+                    case 1:
+                    {
+                        double[] taxableDetails = itemUtil.getTaxableInput(false, item.getIsTaxable());
+
+                        item.setIsTaxable(taxableDetails[0] == 1);
+                        item.setIntraTaxRate(taxableDetails[1]);
+                        item.setInterTaxRate(taxableDetails[2]);
+
+                        System.out.println("\nTaxable has been updated to " + (item.getIsTaxable() ? "true" : "false"));
+                        break;
+                    }
+
+                    case 2:
+                    {
+                        if (!item.getIsTaxable())
+                        {
+                            System.out.println("\nItem is not taxable...");
+                            break;
+                        }
+
+                        double previousIntraTaxRate = item.getIntraTaxRate();
+
+                        double nIntraTaxRate = InputUtils.getValidDoubleInput(0, "Intra Tax Rate", "Enter the Intra Tax Rate:");
+
+                        if (previousIntraTaxRate == nIntraTaxRate)
+                        {
+                            System.out.println("\nYou entered the same Intra Tax Rate again, so no updation is done");
+                            break;
+                        }
+
+                        item.setIntraTaxRate(nIntraTaxRate);
+
+                        System.out.println("\nIntra State Tax Rate updated from " + previousIntraTaxRate + " to " + nIntraTaxRate);
+                        break;
+                    }
+
+                    case 3:
+                    {
+                        if (!item.getIsTaxable())
+                        {
+                            System.out.println("\nItem is not taxable...");
+                            break;
+                        }
+
+                        double previousInterTaxRate = item.getInterTaxRate();
+
+                        double nInterTaxRate = InputUtils.getValidDoubleInput(0, "Inter Tax Rate", "Enter the Inter Tax Rate:");
+
+                        if (previousInterTaxRate == nInterTaxRate)
+                        {
+                            System.out.println("\nYou entered the same Inter Tax Rate again, so no updation is done");
+                            break;
+                        }
+
+                        item.setInterTaxRate(nInterTaxRate);
+
+                        System.out.println("\nInter State Tax Rate updated from " + previousInterTaxRate + " to " + nInterTaxRate);
+                        break;
+                    }
+
+                    case 4:
+                    {
+                        System.out.println("\nExiting the Items Tax Details Module...");
+                        break itemTaxUpdation;
+                    }
+
+                    default:
+                    {
+                        System.out.println("\nEnter a valid input (1 - 4)");
+                        break;
+                    }
+                }
+            }
+        }
+
+    }
+
+    public void searchByName(List<Item> items)
+    {
+        final String NAME_REGEX = "[a-zA-Z0-9\\s'-]+";
+
+        String itemName = InputUtils.getValidStringInput(NAME_REGEX, "Punam Saree", "Item Name", "Enter Item Name (Eg. Punam Saree):", true);
+
+        List<Item> itemsFound = new ArrayList<>();
+
+        for (Item item : items)
+        {
+            if (item.getItemName().toLowerCase().contains(itemName.toLowerCase()))
+            {
+                itemsFound.add(item);
+            }
+        }
+        if (!itemsFound.isEmpty())
+        {
+            System.out.println("\n");
+            InputUtils.showItems(itemsFound);
+        } else
+        {
+            System.out.println("\nNo item found with this name");
+        }
+    }
+
+    public int searchByItemNo (int itemNo, List<Item> items)
+    {
+        for (int i = 0; i < items.size(); i++)
+        {
+            Item item = items.get(i);
+
+            if (item.getItemNo() == itemNo)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void deleteItem (List<Item> items)
+    {
+        int deleteItemNo = InputUtils.getItemNumber(items);
+
+        Item selectedItem = items.get(deleteItemNo);
+
+        if (InputUtils.hasSingleElement(items)) {
+            char confirmationOption = InputUtils.getToggleInput( 'y',"Delete Customer", "\nSince there is only one item " + selectedItem.getItemName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
+
+            if (confirmationOption == 'N' || confirmationOption == 'n') {
+                System.out.println("\nItem is not deleted");
+                return;
+            }
+        }
+
+        System.out.println("\n" + selectedItem.getItemName() + " is deleted successfully...");
+
+        items.remove(deleteItemNo);
+    }
+
+    public void sortingModule (List<Item> items)
+    {
+        SortingUtil sortingUtil = new SortingUtil();
+
+        System.out.println("\nEnter the choice based in which you want to sort the Items: ");
+
+        int sortBy = -1;
+
+        sortModule:
+        {
+            while (true) {
+                System.out.println("\nOption 1 -> Sort by Item Number");
+                System.out.println("Option 2 -> Sort by Date");
+                System.out.println("Option 3 -> Sort by Item Price");
+                System.out.println("Option 4 -> Exit the Sorting Module");
+
+                System.out.println("\nEnter the Sort by Option: ");
+
+                sortBy = InputUtils.handleIntegerInputMisMatches(sortBy, -1);
+
+                int sortingOrder = -1;
+
+                if (sortBy >= 1 && sortBy <= 3){
+                    orderInput:
+                    {
+                        while (true) {
+                            System.out.println("\nOption 1 -> Ascending Order");
+                            System.out.println("Option 2 -> Descending Order");
+
+                            System.out.println("\nEnter the Sorting Order Option: ");
+
+                            sortingOrder = InputUtils.handleIntegerInputMisMatches(sortingOrder, -1);
+
+                            switch (sortingOrder) {
+                                case 1, 2: {
+                                    break orderInput;
+                                }
+                                default: {
+                                    System.out.println("\nEnter a valid input (1 - 2)");
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+                int finalSortingOrder = sortingOrder;
+
+                switch (sortBy) {
+                    case 1: {
+                        Comparator<Item> numberComparator = (a, b) -> {
+                            if (finalSortingOrder == 1)
+                            {
+                                return InputUtils.compareIntegers(a.getItemNo(), b.getItemNo());
+                            }
+                            return InputUtils.compareIntegers(b.getItemNo(), a.getItemNo());
+                        };
+
+                        sortingUtil.mergeSort(0, items.size() - 1, items, numberComparator);
+
+                        break;
+                    }
+                    case 2: {
+                        Comparator<Item> dateComparator = (a, b) -> {
+                            if (finalSortingOrder == 1) {
+                                return InputUtils.compareDates(a.getCreatedAt(), b.getCreatedAt());
+                            }
+                            return InputUtils.compareDates(b.getCreatedAt(), a.getCreatedAt());
+                        };
+
+                        sortingUtil.mergeSort(0, items.size() - 1, items, dateComparator);
+
+                        break;
+                    }
+                    case 3: {
+                        Comparator<Item> priceComparator = (a, b) -> {
+                            if (finalSortingOrder == 1)
+                            {
+                                return InputUtils.compareDoubles(a.getPrice(), b.getPrice());
+                            }
+                            return InputUtils.compareDoubles(b.getPrice(), a.getPrice());
+                        };
+
+                        sortingUtil.mergeSort(0, items.size() - 1, items, priceComparator);
+
+                        break;
+                    }
+                    case 4: {
+                        System.out.println("\nExiting sorting module...");
+                        break sortModule;
+                    }
+                    default: {
+                        System.out.println("\nEnter a valid option (1 - 4)");
+                        break;
+                    }
+                }
+
+                InputUtils.showItems(items);
+
+            }
+        }
+
+    }
+    
+    
 
 }

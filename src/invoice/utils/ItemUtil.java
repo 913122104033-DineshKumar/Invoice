@@ -98,20 +98,12 @@ public class ItemUtil{
         return InputUtils.getValidDoubleInput( 0,  "Selling Price", "Enter the Item Selling Price:");
     }
 
-    public String getDescription (boolean isCreation)
-    {
-        final String DESCRIPTION_REGEX = "[a-zA-Z0-9\\s'-#$%@!*&]+";
+    public String getDescription ()    {
+        final String DESCRIPTION_REGEX = "[a-zA-Z0-9\\s'\\-#$%@!*&]+";
 
         String description = "";
 
-        if (isCreation)
-        {
-            description = InputUtils.getValidStringInput(DESCRIPTION_REGEX,  "Nice Saree", "Item Description", "Enter the Description:", false);
-        } else
-        {
-
-            description = InputUtils.getValidStringInput(DESCRIPTION_REGEX,  "Nice Saree", "Item Description", "Enter the Description:", true);
-        }
+        description = InputUtils.getValidStringInput(DESCRIPTION_REGEX,  "Nice Saree", "Item Description", "Enter the Description:", false);
 
         return description;
     }
