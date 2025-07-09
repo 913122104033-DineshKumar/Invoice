@@ -1,5 +1,6 @@
 package invoice.handlers;
 
+import invoice.interfaces.ComparatorCallBack;
 import invoice.models.Address;
 import invoice.models.Customer;
 import invoice.models.Invoice;
@@ -323,40 +324,41 @@ public class InvoiceHandler
 
                 switch (sortBy) {
                     case 1: {
-                        Comparator<Invoice> numberComparator = (a, b) -> {
-                            if (finalSortingOrder == 1)
-                            {
-                                return InputUtils.compareIntegers(a.getInvNo(), b.getInvNo());
-                            }
-                            return InputUtils.compareIntegers(b.getInvNo(), a.getInvNo());
-                        };
 
-                        sortingUtil.mergeSort(0, invoices.size() - 1, invoices, numberComparator);
+                        sortingUtil.mergeSort(0, invoices.size() - 1, invoices, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Invoice inv1 = (Invoice) obj1;
+                                Invoice inv2 = (Invoice) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareIntegers(inv1.getInvNo(), inv2.getInvNo()) : InputUtils.compareIntegers(inv2.getInvNo(), inv1.getInvNo());
+                            }
+                        });
 
                         break;
                     }
                     case 2: {
-                        Comparator<Invoice> dateComparator = (a, b) -> {
-                            if (finalSortingOrder == 1) {
-                                return InputUtils.compareDates(a.getCreatedAt(), b.getCreatedAt());
-                            }
-                            return InputUtils.compareDates(b.getCreatedAt(), a.getCreatedAt());
-                        };
 
-                        sortingUtil.mergeSort(0, invoices.size() - 1, invoices, dateComparator);
+                        sortingUtil.mergeSort(0, invoices.size() - 1, invoices, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Invoice inv1 = (Invoice) obj1;
+                                Invoice inv2 = (Invoice) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareDates(inv1.getCreatedAt(), inv2.getCreatedAt()) : InputUtils.compareDates(inv2.getCreatedAt(), inv1.getCreatedAt());
+                            }
+                        });
 
                         break;
                     }
                     case 3: {
-                        Comparator<Invoice> dueAmountComparator = (a, b) -> {
-                            if (finalSortingOrder == 1)
-                            {
-                                return InputUtils.compareDoubles(a.getDueAmount(), b.getDueAmount());
-                            }
-                            return InputUtils.compareDoubles(b.getDueAmount(), a.getDueAmount());
-                        };
 
-                        sortingUtil.mergeSort(0, invoices.size() - 1, invoices, dueAmountComparator);
+                        sortingUtil.mergeSort(0, invoices.size() - 1, invoices, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Invoice inv1 = (Invoice) obj1;
+                                Invoice inv2 = (Invoice) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareDoubles(inv1.getDueAmount(), inv2.getDueAmount()) : InputUtils.compareDoubles(inv2.getDueAmount(), inv1.getDueAmount());
+                            }
+                        });
 
                         break;
                     }

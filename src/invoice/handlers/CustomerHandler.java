@@ -1,5 +1,6 @@
 package invoice.handlers;
 
+import invoice.interfaces.ComparatorCallBack;
 import invoice.models.Address;
 import invoice.models.Customer;
 import invoice.utils.CustomerUtil;
@@ -226,38 +227,38 @@ public class CustomerHandler
                 switch (sortBy) {
                     case 1: {
 
-                        Comparator<Customer> numberComparator =  (a, b) -> {
-                            if (finalSortingOrder == 1) {
-                                return InputUtils.compareIntegers(a.getCusNo(), b.getCusNo());
+                        sortingUtil.mergeSort(0, customers.size() - 1, customers, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Customer c1 = (Customer) obj1;
+                                Customer c2 = (Customer) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareIntegers(c1.getCusNo(), c2.getCusNo()) : InputUtils.compareIntegers(c2.getCusNo(), c1.getCusNo());
                             }
-                            return InputUtils.compareIntegers(b.getCusNo(), a.getCusNo());
-                        };
-
-                        sortingUtil.mergeSort(0, customers.size() - 1, customers, numberComparator);
+                        });
 
                         break;
                     }
                     case 2: {
-                        Comparator<Customer> dateComparator = (a, b) -> {
-                            if (finalSortingOrder == 1) {
-                                return InputUtils.compareDates(a.getCreatedAt(), b.getCreatedAt());
+                        sortingUtil.mergeSort(0, customers.size() - 1, customers, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Customer c1 = (Customer) obj1;
+                                Customer c2 = (Customer) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareDates(c1.getCreatedAt(), c2.getCreatedAt()) : InputUtils.compareDates(c2.getCreatedAt(), c1.getCreatedAt());
                             }
-                            return InputUtils.compareDates(b.getCreatedAt(), a.getCreatedAt());
-                        };
-
-                        sortingUtil.mergeSort(0, customers.size() - 1, customers, dateComparator);
+                        });
 
                         break;
                     }
                     case 3: {
-                        Comparator<Customer> nameComparator = (a,b) -> {
-                            if (finalSortingOrder == 1)
-                            {
-                                return InputUtils.compareStrings(a.getName(), b.getName());
+                        sortingUtil.mergeSort(0, customers.size() - 1, customers, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Customer c1 = (Customer) obj1;
+                                Customer c2 = (Customer) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareStrings(c1.getName(), c2.getName()) : InputUtils.compareStrings(c2.getName(), c1.getName());
                             }
-                            return InputUtils.compareStrings(b.getName(), a.getName());
-                        };
-                        sortingUtil.mergeSort(0, customers.size() - 1, customers, nameComparator);
+                        });
 
                         break;
                     }

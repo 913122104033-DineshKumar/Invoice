@@ -1,16 +1,18 @@
 package invoice.utils;
 
+import invoice.interfaces.ComparatorCallBack;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class SortingUtil
+public class SortingUtil implements ComparatorCallBack
 {
 
     public SortingUtil () { }
 
-    public <T> void mergeSort (int low, int high, List<T> sourceList, Comparator<T> comparator)
+    public <T> void mergeSort (int low, int high, List<T> sourceList, ComparatorCallBack comparatorCallBack)
     {
         if (low >= high)
         {
@@ -19,12 +21,12 @@ public class SortingUtil
 
         int mid = (low + high) / 2;
 
-        mergeSort(low, mid, sourceList, comparator);
-        mergeSort(mid + 1, high, sourceList, comparator);
-        merge(low, mid, high, sourceList, comparator);
+        mergeSort(low, mid, sourceList, comparatorCallBack);
+        mergeSort(mid + 1, high, sourceList, comparatorCallBack);
+        merge(low, mid, high, sourceList, comparatorCallBack);
     }
 
-    private <T> void merge (int low, int mid, int high, List<T> sourceList, Comparator<T> comparator)
+    private <T> void merge (int low, int mid, int high, List<T> sourceList, ComparatorCallBack comparatorCallBack)
     {
         List<T> leftSubList = fillSubList(low, mid, sourceList);
 
@@ -35,7 +37,7 @@ public class SortingUtil
 
         while (leftIndex < leftSubList.size() && rightIndex < rightSubList.size())
         {
-            int comparisonValue = comparator.compare(leftSubList.get(leftIndex), rightSubList.get(rightIndex));
+            int comparisonValue = comparatorCallBack.comparator(leftSubList.get(leftIndex), rightSubList.get(rightIndex));
 
             if (comparisonValue == 1)
             {
@@ -77,4 +79,8 @@ public class SortingUtil
         return subList;
     }
 
+    @Override
+    public <T> int comparator (T obj1, T obj2) {
+        return 0;
+    }
 }

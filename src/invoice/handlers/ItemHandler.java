@@ -1,5 +1,6 @@
 package invoice.handlers;
 
+import invoice.interfaces.ComparatorCallBack;
 import invoice.models.Item;
 import invoice.utils.InputUtils;
 import invoice.utils.ItemUtil;
@@ -445,40 +446,41 @@ public class ItemHandler
 
                 switch (sortBy) {
                     case 1: {
-                        Comparator<Item> numberComparator = (a, b) -> {
-                            if (finalSortingOrder == 1)
-                            {
-                                return InputUtils.compareIntegers(a.getItemNo(), b.getItemNo());
-                            }
-                            return InputUtils.compareIntegers(b.getItemNo(), a.getItemNo());
-                        };
 
-                        sortingUtil.mergeSort(0, items.size() - 1, items, numberComparator);
+                        sortingUtil.mergeSort(0, items.size() - 1, items, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Item it1 = (Item) obj1;
+                                Item it2 = (Item) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareIntegers(it1.getItemNo(), it2.getItemNo()) : InputUtils.compareIntegers(it2.getItemNo(), it1.getItemNo());
+                            }
+                        });
 
                         break;
                     }
                     case 2: {
-                        Comparator<Item> dateComparator = (a, b) -> {
-                            if (finalSortingOrder == 1) {
-                                return InputUtils.compareDates(a.getCreatedAt(), b.getCreatedAt());
-                            }
-                            return InputUtils.compareDates(b.getCreatedAt(), a.getCreatedAt());
-                        };
 
-                        sortingUtil.mergeSort(0, items.size() - 1, items, dateComparator);
+                        sortingUtil.mergeSort(0, items.size() - 1, items, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Item it1 = (Item) obj1;
+                                Item it2 = (Item) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareDates(it1.getCreatedAt(), it2.getCreatedAt()) : InputUtils.compareDates(it2.getCreatedAt(), it1.getCreatedAt());
+                            }
+                        });
 
                         break;
                     }
                     case 3: {
-                        Comparator<Item> priceComparator = (a, b) -> {
-                            if (finalSortingOrder == 1)
-                            {
-                                return InputUtils.compareDoubles(a.getPrice(), b.getPrice());
-                            }
-                            return InputUtils.compareDoubles(b.getPrice(), a.getPrice());
-                        };
 
-                        sortingUtil.mergeSort(0, items.size() - 1, items, priceComparator);
+                        sortingUtil.mergeSort(0, items.size() - 1, items, new ComparatorCallBack() {
+                            @Override
+                            public <T> int comparator(T obj1, T obj2) {
+                                Item it1 = (Item) obj1;
+                                Item it2 = (Item) obj2;
+                                return finalSortingOrder == 1 ? InputUtils.compareDoubles(it1.getPrice(), it2.getPrice()) : InputUtils.compareDoubles(it2.getPrice(), it1.getPrice());
+                            }
+                        });
 
                         break;
                     }
