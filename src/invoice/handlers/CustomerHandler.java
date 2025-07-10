@@ -3,13 +3,10 @@ package invoice.handlers;
 import invoice.interfaces.ComparatorCallBack;
 import invoice.models.Address;
 import invoice.models.Customer;
-import invoice.utils.CustomerUtil;
-import invoice.utils.InputUtils;
-import invoice.utils.SortingUtil;
+import invoice.utils.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class CustomerHandler
@@ -42,9 +39,9 @@ public class CustomerHandler
 
         Customer customer = new Customer(customerType, LocalDate.now(), name, companyName, email, phone);
 
-        customer.setAddress(new AddressHandler(null, null).createOrEdit(false));
+        customer.setAddress(new AddressHandler(null, null, "Office Address").buildAddress(false));
 
-        customer.setShippingAddress(new AddressHandler(null, customer.getAddress()).createOrEdit(true));
+        customer.setShippingAddress(new AddressHandler(null, customer.getAddress(), "Shipping Address").buildAddress(true));
 
         customer.setCustomerId(customer.generateCustomerId());
 
@@ -58,7 +55,7 @@ public class CustomerHandler
             return;
         }
 
-        int customerNo = InputUtils.getCustomerNumber(customers);
+        int customerNo = InputUtil.getCustomerNumber(customers);
 
         Customer customer = customers.get(customerNo);
 
@@ -83,19 +80,19 @@ public class CustomerHandler
 
                 // Option
                 System.out.println("\nEnter the option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 switch (option)
                 {
                     case 1:
                     {
-                        updateCustomerDetails(customer, customers);
+                        updatePrimaryCustomerDetails(customer, customers);
                         break;
                     }
 
                     case 2:
                     {
-                        customer.setAddress(new AddressHandler(customer.getCustomerId(), customer.getAddress()).createOrEdit(false));
+                        customer.setAddress(new AddressHandler(customer.getCustomerId(), customer.getAddress(), "Office Address").buildAddress(false));
 
                         break;
                     }
@@ -104,7 +101,7 @@ public class CustomerHandler
                     {
                         Address shippingAddress = customer.getShippingAddress() == null ? customer.getAddress() : customer.getShippingAddress();
 
-                        customer.setShippingAddress(new AddressHandler(customer.getCustomerId(), shippingAddress).createOrEdit(true));
+                        customer.setShippingAddress(new AddressHandler(customer.getCustomerId(), shippingAddress, "Shipping Address").buildAddress(true));
 
                         break;
                     }
@@ -133,7 +130,7 @@ public class CustomerHandler
     {
         final String NAME_REGEX = "[a-zA-Z\\s'-]+";
 
-        String customerName = InputUtils.getValidStringInput(NAME_REGEX, "Dinesh Kumar K K", "Customer Name", "Enter the Customer Name", true);
+        String customerName = ValidationUtil.getValidStringInput(NAME_REGEX, "Dinesh Kumar K K", "Customer Name", "Enter the Customer Name", true);
 
         List<Customer> customersFound = new ArrayList<>();
 
@@ -148,7 +145,7 @@ public class CustomerHandler
         if (!customersFound.isEmpty())
         {
             System.out.println("\n");
-            InputUtils.showCustomers(customersFound);
+            DisplayUtil.showCustomers(customersFound);
         } else
         {
             System.out.println("\nNo customer found with this name");
@@ -157,12 +154,12 @@ public class CustomerHandler
 
     public void deleteCustomer (List<Customer> customers)
     {
-        int deleteCustomerNo = InputUtils.getCustomerNumber(customers);
+        int deleteCustomerNo = InputUtil.getCustomerNumber(customers);
 
         Customer selectedCustomer = customers.get(deleteCustomerNo);
 
-        if (InputUtils.hasSingleElement(customers)) {
-            char confirmationOption = InputUtils.collectToggleChoice(  'y', "Delete Customer", "\nSince there is only one customer " + customers.get(deleteCustomerNo).getName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
+        if (InputUtil.hasSingleElement(customers)) {
+            char confirmationOption = ValidationUtil.collectToggleChoice(  'y', "Delete Customer", "\nSince there is only one customer " + customers.get(deleteCustomerNo).getName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
 
             if (confirmationOption == 'N' || confirmationOption == 'n') {
                 System.out.println("\nCustomer is not deleted");
@@ -175,7 +172,7 @@ public class CustomerHandler
         customers.remove(deleteCustomerNo);
     }
 
-    public void sortingModule (List<Customer> customers)
+    public void sortCustomers(List<Customer> customers)
     {
         SortingUtil sortingUtil = new SortingUtil();
 
@@ -193,7 +190,7 @@ public class CustomerHandler
 
                 System.out.println("\nEnter the Sort by Option: ");
 
-                sortBy = InputUtils.handleIntegerInputMisMatches(sortBy, -1);
+                sortBy = InputUtil.handleIntegerInputMisMatches(sortBy, -1);
 
                 int sortingOrder = -1;
 
@@ -206,7 +203,7 @@ public class CustomerHandler
 
                             System.out.println("\nEnter the Sorting Order Option: ");
 
-                            sortingOrder = InputUtils.handleIntegerInputMisMatches(sortingOrder, -1);
+                            sortingOrder = InputUtil.handleIntegerInputMisMatches(sortingOrder, -1);
 
                             switch (sortingOrder) {
                                 case 1, 2: {
@@ -232,7 +229,7 @@ public class CustomerHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Customer c1 = (Customer) obj1;
                                 Customer c2 = (Customer) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareIntegers(c1.getCusNo(), c2.getCusNo()) : InputUtils.compareIntegers(c2.getCusNo(), c1.getCusNo());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareIntegers(c1.getCusNo(), c2.getCusNo()) : ComparisonUtil.compareIntegers(c2.getCusNo(), c1.getCusNo());
                             }
                         });
 
@@ -244,7 +241,7 @@ public class CustomerHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Customer c1 = (Customer) obj1;
                                 Customer c2 = (Customer) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareDates(c1.getCreatedAt(), c2.getCreatedAt()) : InputUtils.compareDates(c2.getCreatedAt(), c1.getCreatedAt());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareDates(c1.getCreatedAt(), c2.getCreatedAt()) : ComparisonUtil.compareDates(c2.getCreatedAt(), c1.getCreatedAt());
                             }
                         });
 
@@ -256,7 +253,7 @@ public class CustomerHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Customer c1 = (Customer) obj1;
                                 Customer c2 = (Customer) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareStrings(c1.getName(), c2.getName()) : InputUtils.compareStrings(c2.getName(), c1.getName());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareStrings(c1.getName(), c2.getName()) : ComparisonUtil.compareStrings(c2.getName(), c1.getName());
                             }
                         });
 
@@ -272,13 +269,13 @@ public class CustomerHandler
                     }
                 }
 
-                InputUtils.showCustomers(customers);
+                DisplayUtil.showCustomers(customers);
             }
         }
 
     }
 
-    private void updateCustomerDetails (Customer customer, List<Customer> customers) {
+    private void updatePrimaryCustomerDetails(Customer customer, List<Customer> customers) {
         int option = -1;
 
         customerPrimaryDetailsUpdationMenu:
@@ -293,14 +290,14 @@ public class CustomerHandler
                 System.out.println("Option 6 -> Exit");
 
                 System.out.println("\nEnter the option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 switch (option)
                 {
                     case 1:
                     {
                         char previousCustomerType = customer.getCustomerType();
-                        String previousCustomerTypeString = customer.getCustomerType(previousCustomerType);
+                        String previousCustomerTypeLabel = customer.getCustomerType(previousCustomerType);
 
                         char updatedCustomerType = customerUtil.getCustomerTypeInput();
 
@@ -312,13 +309,13 @@ public class CustomerHandler
 
                         customer.setCustomerType(updatedCustomerType);
 
-                        System.out.println("\nCustomer's Type updated from " + previousCustomerTypeString + " to " + customer.getCustomerType(updatedCustomerType));
+                        System.out.println("\nCustomer's Type updated from " + previousCustomerTypeLabel + " to " + customer.getCustomerType(updatedCustomerType));
                         break;
                     }
 
                     case 2:
                     {
-                        String previousName = InputUtils.handleNullStrings(customer.getName());
+                        String previousName = InputUtil.handleNullStrings(customer.getName());
 
                         String updatedName = customerUtil.getNameInput();
 
@@ -336,7 +333,7 @@ public class CustomerHandler
 
                     case 3:
                     {
-                        String previousCompanyName = InputUtils.handleNullStrings(customer.getCompanyName());
+                        String previousCompanyName = InputUtil.handleNullStrings(customer.getCompanyName());
 
                         if (customer.getCustomerType() == 'i')
                         {
@@ -375,7 +372,7 @@ public class CustomerHandler
 
                     case 5:
                     {
-                        String previousPhone = InputUtils.handleNullStrings(customer.getPhone());
+                        String previousPhone = InputUtil.handleNullStrings(customer.getPhone());
 
                         String nPhone = customerUtil.getPhoneInput();
 

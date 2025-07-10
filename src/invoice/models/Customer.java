@@ -1,6 +1,7 @@
 package invoice.models;
 
-import invoice.utils.InputUtils;
+import invoice.utils.DisplayUtil;
+import invoice.utils.InputUtil;
 
 import java.time.LocalDate;
 
@@ -29,11 +30,27 @@ public class Customer
         this.customerType = customerType;
         this.createdAt = createdAt;
         this.name = name;
+        this.companyName = companyName;
+        this.email = email;
+        this.phone = phone;
+        this.customerId = generateCustomerId();
+        this.cusNo = totalCustomers;
+        totalCustomers++;
+    }
+
+    public Customer (char customerType, LocalDate createdAt, String name, String companyName, String email, String phone, Address address, Address shippingAddress)
+    {
+        this.customerType = customerType;
+        this.createdAt = createdAt;
+        this.name = name;
         this.cusNo = totalCustomers;
         totalCustomers++;
         this.companyName = companyName;
         this.email = email;
         this.phone = phone;
+        this.address = address;
+        this.shippingAddress = shippingAddress;
+        this.customerId = generateCustomerId();
     }
 
     public void setCustomerType(char customerType) {
@@ -112,13 +129,13 @@ public class Customer
 
     public String generateCustomerId ()
     {
-        String[] emailSplit = this.email.split("@");
-        return "CUS" + emailSplit[0].toUpperCase() + this.phone.substring(0, 2);
+        String emailSplit = this.email.split("@")[0].toUpperCase();
+        return "CUS" + emailSplit + this.phone.substring(this.phone.length() - 2);
     }
 
     public void showCustomer()
     {
-        InputUtils.printHyphens(60);
+        DisplayUtil.printHyphens(60);
 
         System.out.printf("| %15s | %15s | %15s | %15s | %25s | %15s |\n",
                 "Customer ID",
@@ -128,7 +145,7 @@ public class Customer
                 "Email",
                 "Phone");
 
-        InputUtils.printHyphens(60);
+        DisplayUtil.printHyphens(60);
 
         System.out.printf("| %15s | %15s | %15s | %15s | %25s | %15s |\n",
                 customerId,
@@ -138,7 +155,7 @@ public class Customer
                 email,
                 phone);
 
-        InputUtils.printHyphens(60);
+        DisplayUtil.printHyphens(60);
     }
 
 }

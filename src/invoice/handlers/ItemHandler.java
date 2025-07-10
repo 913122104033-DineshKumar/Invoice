@@ -2,18 +2,15 @@ package invoice.handlers;
 
 import invoice.interfaces.ComparatorCallBack;
 import invoice.models.Item;
-import invoice.utils.InputUtils;
-import invoice.utils.ItemUtil;
-import invoice.utils.SortingUtil;
+import invoice.utils.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class ItemHandler
 {
-    private ItemUtil itemUtil;
+    private final ItemUtil itemUtil;
 
     public ItemHandler () { 
         this.itemUtil = new ItemUtil();
@@ -21,10 +18,6 @@ public class ItemHandler
 
     public Item create (List<Item> items)
     {
-        if (itemUtil == null) {
-            itemUtil = new ItemUtil();
-        }
-
         System.out.println("\nYou can add Item now");
 
         // Item Type Input
@@ -57,7 +50,7 @@ public class ItemHandler
 
     public void update (List<Item> items)
     {
-        int itemNo = InputUtils.getItemNumber(items);
+        int itemNo = InputUtil.getItemNumber(items);
 
         Item item = items.get(itemNo);
 
@@ -74,7 +67,7 @@ public class ItemHandler
 
                 System.out.println("\nEnter the option: ");
 
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
 
                 switch (option)
@@ -128,7 +121,7 @@ public class ItemHandler
                 System.out.println("-".repeat(30));
 
                 System.out.println("\nEnter the option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 switch (option)
                 {
@@ -153,7 +146,7 @@ public class ItemHandler
 
                     case 2:
                     {
-                        String previousName = InputUtils.handleNullStrings(item.getItemName());
+                        String previousName = InputUtil.handleNullStrings(item.getItemName());
 
                         String updatedItemName = itemUtil.getItemNameInput(items);
 
@@ -209,7 +202,7 @@ public class ItemHandler
 
                     case 5:
                     {
-                        String previousDescription = InputUtils.handleNullStrings(item.getDescription());
+                        String previousDescription = InputUtil.handleNullStrings(item.getDescription());
 
                         String nDescription = itemUtil.getDescription();
 
@@ -255,7 +248,7 @@ public class ItemHandler
 
                 System.out.println("\nEnter Option: ");
 
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 switch (option)
                 {
@@ -281,7 +274,7 @@ public class ItemHandler
 
                         double previousIntraTaxRate = item.getIntraTaxRate();
 
-                        double nIntraTaxRate = InputUtils.getValidDoubleInput(0, "Intra Tax Rate", "Enter the Intra Tax Rate:");
+                        double nIntraTaxRate = ValidationUtil.getValidDoubleInput(0, "Intra Tax Rate", "Enter the Intra Tax Rate:");
 
                         if (previousIntraTaxRate == nIntraTaxRate)
                         {
@@ -305,7 +298,7 @@ public class ItemHandler
 
                         double previousInterTaxRate = item.getInterTaxRate();
 
-                        double nInterTaxRate = InputUtils.getValidDoubleInput(0, "Inter Tax Rate", "Enter the Inter Tax Rate:");
+                        double nInterTaxRate = ValidationUtil.getValidDoubleInput(0, "Inter Tax Rate", "Enter the Inter Tax Rate:");
 
                         if (previousInterTaxRate == nInterTaxRate)
                         {
@@ -340,7 +333,7 @@ public class ItemHandler
     {
         final String NAME_REGEX = "[a-zA-Z0-9\\s'-]+";
 
-        String itemName = InputUtils.getValidStringInput(NAME_REGEX, "Punam Saree", "Item Name", "Enter Item Name (Eg. Punam Saree):", true);
+        String itemName = ValidationUtil.getValidStringInput(NAME_REGEX, "Punam Saree", "Item Name", "Enter Item Name (Eg. Punam Saree):", true);
 
         List<Item> itemsFound = new ArrayList<>();
 
@@ -354,7 +347,7 @@ public class ItemHandler
         if (!itemsFound.isEmpty())
         {
             System.out.println("\n");
-            InputUtils.showItems(itemsFound);
+            DisplayUtil.showItems(itemsFound);
         } else
         {
             System.out.println("\nNo item found with this name");
@@ -377,12 +370,12 @@ public class ItemHandler
 
     public void deleteItem (List<Item> items)
     {
-        int deleteItemNo = InputUtils.getItemNumber(items);
+        int deleteItemNo = InputUtil.getItemNumber(items);
 
         Item selectedItem = items.get(deleteItemNo);
 
-        if (InputUtils.hasSingleElement(items)) {
-            char confirmationOption = InputUtils.collectToggleChoice( 'y',"Delete Customer", "\nSince there is only one item " + selectedItem.getItemName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
+        if (InputUtil.hasSingleElement(items)) {
+            char confirmationOption = ValidationUtil.collectToggleChoice( 'y',"Delete Customer", "\nSince there is only one item " + selectedItem.getItemName() + "\nDo you still want to delete (y -> yes, any other key -> no)");
 
             if (confirmationOption == 'N' || confirmationOption == 'n') {
                 System.out.println("\nItem is not deleted");
@@ -413,7 +406,7 @@ public class ItemHandler
 
                 System.out.println("\nEnter the Sort by Option: ");
 
-                sortBy = InputUtils.handleIntegerInputMisMatches(sortBy, -1);
+                sortBy = InputUtil.handleIntegerInputMisMatches(sortBy, -1);
 
                 int sortingOrder = -1;
 
@@ -426,7 +419,7 @@ public class ItemHandler
 
                             System.out.println("\nEnter the Sorting Order Option: ");
 
-                            sortingOrder = InputUtils.handleIntegerInputMisMatches(sortingOrder, -1);
+                            sortingOrder = InputUtil.handleIntegerInputMisMatches(sortingOrder, -1);
 
                             switch (sortingOrder) {
                                 case 1, 2: {
@@ -452,7 +445,7 @@ public class ItemHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Item it1 = (Item) obj1;
                                 Item it2 = (Item) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareIntegers(it1.getItemNo(), it2.getItemNo()) : InputUtils.compareIntegers(it2.getItemNo(), it1.getItemNo());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareIntegers(it1.getItemNo(), it2.getItemNo()) : ComparisonUtil.compareIntegers(it2.getItemNo(), it1.getItemNo());
                             }
                         });
 
@@ -465,7 +458,7 @@ public class ItemHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Item it1 = (Item) obj1;
                                 Item it2 = (Item) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareDates(it1.getCreatedAt(), it2.getCreatedAt()) : InputUtils.compareDates(it2.getCreatedAt(), it1.getCreatedAt());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareDates(it1.getCreatedAt(), it2.getCreatedAt()) : ComparisonUtil.compareDates(it2.getCreatedAt(), it1.getCreatedAt());
                             }
                         });
 
@@ -478,7 +471,7 @@ public class ItemHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Item it1 = (Item) obj1;
                                 Item it2 = (Item) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareDoubles(it1.getPrice(), it2.getPrice()) : InputUtils.compareDoubles(it2.getPrice(), it1.getPrice());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareDoubles(it1.getPrice(), it2.getPrice()) : ComparisonUtil.compareDoubles(it2.getPrice(), it1.getPrice());
                             }
                         });
 
@@ -494,13 +487,10 @@ public class ItemHandler
                     }
                 }
 
-                InputUtils.showItems(items);
+                DisplayUtil.showItems(items);
 
             }
         }
 
     }
-    
-    
-
 }

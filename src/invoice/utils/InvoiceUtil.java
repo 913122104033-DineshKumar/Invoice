@@ -9,12 +9,12 @@ public class InvoiceUtil
     public int getSerialNumberInput (int lowerLimit, int upperLimit, String fieldName)
     {
 
-        return InputUtils.getValidRange( lowerLimit, upperLimit, fieldName+ " Number", "Enter the " + fieldName.trim() + " Number from the table: ");
+        return ValidationUtil.getValidRange( lowerLimit, upperLimit, fieldName+ " Number", "Enter the " + fieldName.trim() + " Number from the table: ");
     }
 
     public int getPaymentTermInput ()
     {
-        return InputUtils.getValidRange( 0, (int) 1e9, "Invoice's Payment Term", "Enter the Payment Term (Eg. 15, 30, 45, 90): ");
+        return ValidationUtil.getValidRange( 0, (int) 1e9, "Invoice's Payment Term", "Enter the Payment Term (Eg. 15, 30, 45, 90): ");
     }
 
     public double getDiscountInput (boolean isCreation)
@@ -22,7 +22,7 @@ public class InvoiceUtil
         double discount = 0;
         if (isCreation)
         {
-            char conformationOption = InputUtils.collectToggleChoice(  'y', "Discount Option", "Want to Enter discount (y -> yes, any other key -> no)");
+            char conformationOption = ValidationUtil.collectToggleChoice(  'y', "Discount Option", "Want to Enter discount (y -> yes, any other key -> no)");
 
             if (conformationOption == 'y')
             {
@@ -41,7 +41,7 @@ public class InvoiceUtil
 
         if (isCreation)
         {
-            char conformationOption = InputUtils.collectToggleChoice(  'y', "Shipping Charges Option", "Want to Enter the Shipping Charges (y -> yes, any other key -> no)");
+            char conformationOption = ValidationUtil.collectToggleChoice(  'y', "Shipping Charges Option", "Want to Enter the Shipping Charges (y -> yes, any other key -> no)");
 
             if (conformationOption == 'y')
             {
@@ -58,12 +58,12 @@ public class InvoiceUtil
     public double getPaymentInput (double dueAmount)
     {
 
-        return InputUtils.getValidDoubleRange(0, dueAmount,  "Invoice Due Amount", "\nEnter the amount (Due Amount (or) Remaining Amount: " + dueAmount + "):");
+        return ValidationUtil.getValidDoubleRange(0, dueAmount,  "Invoice Due Amount", "\nEnter the amount (Due Amount (or) Remaining Amount: " + dueAmount + "):");
     }
 
     private double getDoubleInput (String fieldName)
     {
-        return InputUtils.getValidDoubleInput( 0,  fieldName, "Enter the " + fieldName + ":");
+        return ValidationUtil.getValidDoubleInput( 0,  fieldName, "Enter the " + fieldName + ":");
     }
 
 }

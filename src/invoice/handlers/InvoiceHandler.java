@@ -5,9 +5,7 @@ import invoice.models.Address;
 import invoice.models.Customer;
 import invoice.models.Invoice;
 import invoice.models.Item;
-import invoice.utils.InvoiceUtil;
-import invoice.utils.SortingUtil;
-import invoice.utils.InputUtils;
+import invoice.utils.*;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -50,12 +48,10 @@ public class InvoiceHandler
         }
 
         if (!customerCreated) {
-            cusNo = InputUtils.getCustomerNumber(customers);
+            cusNo = InputUtil.getCustomerNumber(customers);
         }
 
         Customer cus = customers.get(cusNo);
-
-        LocalDate date = LocalDate.now();
 
         int paymentTerm = invoiceUtil.getPaymentTermInput();
 
@@ -82,7 +78,7 @@ public class InvoiceHandler
 
         double paymentReceived = 0;
 
-        char conformationOption = InputUtils.collectToggleChoice( 'y', "Payment Receival", "Have you received payment (y -> yes, any other key -> no)");
+        char conformationOption = ValidationUtil.collectToggleChoice( 'y', "Payment Receival", "Have you received payment (y -> yes, any other key -> no)");
 
         if (conformationOption == 'y') {
             paymentReceived = invoiceUtil.getPaymentInput(invTotal);
@@ -95,7 +91,7 @@ public class InvoiceHandler
         } else if (paymentReceived > 0) {
             status = Status.PARTIALLY_PAID;
         } else {
-            char invoiceSentConfirmation = InputUtils.collectToggleChoice(  'y', "Invoice Sent", "Have you sent the invoice to customer? (y -> yes, any other key -> no)");
+            char invoiceSentConfirmation = ValidationUtil.collectToggleChoice(  'y', "Invoice Sent", "Have you sent the invoice to customer? (y -> yes, any other key -> no)");
 
             if (invoiceSentConfirmation == 'Y' || invoiceSentConfirmation == 'y') {
                 status = Status.SENT;
@@ -128,7 +124,7 @@ public class InvoiceHandler
                 System.out.println("Option 3 -> Exit the Update Module");
 
                 System.out.println("\nEnter Option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 if (showWarning(invoice, "update")) {
                     return;
@@ -176,7 +172,7 @@ public class InvoiceHandler
 
     public void deleteInvoice (List<Invoice> invoices)
     {
-        int deleteInvoiceNo = InputUtils.getInvoiceNumber(invoices);
+        int deleteInvoiceNo = InputUtil.getInvoiceNumber(invoices);
 
         Invoice selectedInvoice = invoices.get(deleteInvoiceNo);
 
@@ -204,11 +200,11 @@ public class InvoiceHandler
                 System.out.println("\nOption 4 -> Exiting the Payment Module");
 
                 System.out.println("\nHow you want to pay: ");
-                optionForPayment = InputUtils.handleIntegerInputMisMatches(optionForPayment, -1);
+                optionForPayment = InputUtil.handleIntegerInputMisMatches(optionForPayment, -1);
 
                 switch (optionForPayment) {
                     case 1: {
-                        int invNo = InputUtils.getInvoiceNumber(invoices);
+                        int invNo = InputUtil.getInvoiceNumber(invoices);
 
                         Invoice paymentInvoice = invoices.get(invNo);
 
@@ -218,7 +214,7 @@ public class InvoiceHandler
                     }
 
                     case 2: {
-                        int cusNo = InputUtils.getCustomerNumber(customers);
+                        int cusNo = InputUtil.getCustomerNumber(customers);
 
                         List<Invoice> customerInvoices = searchByCustomer(customers.get(cusNo).getName(), invoices, 0);
 
@@ -227,7 +223,7 @@ public class InvoiceHandler
                         break;
                     }
                     case 3: {
-                        int cusNo = InputUtils.getCustomerNumber(customers);
+                        int cusNo = InputUtil.getCustomerNumber(customers);
 
                         List<Invoice> customerInvoices = searchByCustomer(customers.get(cusNo).getName(), invoices, 0);
 
@@ -236,7 +232,7 @@ public class InvoiceHandler
                         LocalDate startDate = parseDateFromInput("Start Date");
                         LocalDate endDate = parseDateFromInput("End Date");
 
-                        while (InputUtils.compareDates(startDate, endDate) == -1)
+                        while (ComparisonUtil.compareDates(startDate, endDate) == -1)
                         {
                             System.out.println("\nStart date should be before the end date, you entered wrongly");
                             startDate = parseDateFromInput("Start Date");
@@ -246,8 +242,8 @@ public class InvoiceHandler
                         for (Invoice invoice : customerInvoices) {
                             LocalDate invoiceDate = invoice.getCreatedAt();
 
-                            if (InputUtils.compareDates(startDate, invoiceDate) == 1
-                                    && InputUtils.compareDates(invoiceDate, endDate) == 1) {
+                            if (ComparisonUtil.compareDates(startDate, invoiceDate) == 1
+                                    && ComparisonUtil.compareDates(invoiceDate, endDate) == 1) {
                                 inRangeInvoices.add(invoice);
                             }
                         }
@@ -291,7 +287,7 @@ public class InvoiceHandler
 
                 System.out.println("\nEnter the Sort by Option: ");
 
-                sortBy = InputUtils.handleIntegerInputMisMatches(sortBy, -1);
+                sortBy = InputUtil.handleIntegerInputMisMatches(sortBy, -1);
 
                 int sortingOrder = -1;
 
@@ -304,7 +300,7 @@ public class InvoiceHandler
 
                             System.out.println("\nEnter the Sorting Order Option: ");
 
-                            sortingOrder = InputUtils.handleIntegerInputMisMatches(sortingOrder, -1);
+                            sortingOrder = InputUtil.handleIntegerInputMisMatches(sortingOrder, -1);
 
                             switch (sortingOrder) {
                                 case 1, 2: {
@@ -330,7 +326,7 @@ public class InvoiceHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Invoice inv1 = (Invoice) obj1;
                                 Invoice inv2 = (Invoice) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareIntegers(inv1.getInvNo(), inv2.getInvNo()) : InputUtils.compareIntegers(inv2.getInvNo(), inv1.getInvNo());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareIntegers(inv1.getInvNo(), inv2.getInvNo()) : ComparisonUtil.compareIntegers(inv2.getInvNo(), inv1.getInvNo());
                             }
                         });
 
@@ -343,7 +339,7 @@ public class InvoiceHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Invoice inv1 = (Invoice) obj1;
                                 Invoice inv2 = (Invoice) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareDates(inv1.getCreatedAt(), inv2.getCreatedAt()) : InputUtils.compareDates(inv2.getCreatedAt(), inv1.getCreatedAt());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareDates(inv1.getCreatedAt(), inv2.getCreatedAt()) : ComparisonUtil.compareDates(inv2.getCreatedAt(), inv1.getCreatedAt());
                             }
                         });
 
@@ -356,7 +352,7 @@ public class InvoiceHandler
                             public <T> int comparator(T obj1, T obj2) {
                                 Invoice inv1 = (Invoice) obj1;
                                 Invoice inv2 = (Invoice) obj2;
-                                return finalSortingOrder == 1 ? InputUtils.compareDoubles(inv1.getDueAmount(), inv2.getDueAmount()) : InputUtils.compareDoubles(inv2.getDueAmount(), inv1.getDueAmount());
+                                return finalSortingOrder == 1 ? ComparisonUtil.compareDoubles(inv1.getDueAmount(), inv2.getDueAmount()) : ComparisonUtil.compareDoubles(inv2.getDueAmount(), inv1.getDueAmount());
                             }
                         });
 
@@ -372,7 +368,7 @@ public class InvoiceHandler
                     }
                 }
 
-                InputUtils.showInvoices(invoices);
+                DisplayUtil.showInvoices(invoices);
 
             }
         }
@@ -407,7 +403,7 @@ public class InvoiceHandler
 
     public void updateStatus (List<Invoice> invoices)
     {
-        int invNo = InputUtils.getInvoiceNumber(invoices);
+        int invNo = InputUtil.getInvoiceNumber(invoices);
 
         Invoice invoice = invoices.get(invNo);
 
@@ -423,7 +419,7 @@ public class InvoiceHandler
         // To get a proper Status Code
         status:
         while (true) {
-            statusOrdinal = InputUtils.getValidRange(1, 4, "Invoice Status", "Enter the Status No:\n" + InputUtils.showStatuses()) - 1;
+            statusOrdinal = ValidationUtil.getValidRange(1, 4, "Invoice Status", "Enter the Status No:\n" + showStatuses()) - 1;
 
             if (previousStatusOrdinal == statusOrdinal) {
                 System.out.println("\nThis invoice is already " + switch (statusOrdinal) {
@@ -442,7 +438,7 @@ public class InvoiceHandler
 
             if (previousStatusOrdinal > InvoiceHandler.Status.SENT.ordinal())
             {
-                char confirmationOption = InputUtils.collectToggleChoice(   'y',"Status Demotion", "You are trying to demote the Status" + "\nDo you want to continue this process, then if you had paid the amount for this invoice will be refunded and the due will increase by " + (invoice.getTotal() - invoice.getDueAmount()) + " (y -> yes, any other key -> no)");
+                char confirmationOption = ValidationUtil.collectToggleChoice(   'y',"Status Demotion", "You are trying to demote the Status" + "\nDo you want to continue this process, then if you had paid the amount for this invoice will be refunded and the due will increase by " + (invoice.getTotal() - invoice.getDueAmount()) + " (y -> yes, any other key -> no)");
 
                 if (confirmationOption == 'y')
                 {
@@ -459,7 +455,7 @@ public class InvoiceHandler
                 }
             } else
             {
-                char confirmationOption = InputUtils.collectToggleChoice(  'y',"Status Demotion", "Do you want the Status from SENT to DRAFT (y -> yes, any other key -> no)");
+                char confirmationOption = ValidationUtil.collectToggleChoice(  'y',"Status Demotion", "Do you want the Status from SENT to DRAFT (y -> yes, any other key -> no)");
 
                 if (confirmationOption == 'y')
                 {
@@ -494,7 +490,7 @@ public class InvoiceHandler
 
         System.out.println("\n--- CUSTOMER'S OUTSTANDING INVOICES ---");
 
-        InputUtils.showInvoices(customerInvoices);
+        DisplayUtil.showInvoices(customerInvoices);
 
         System.out.println("\n TOTAL AMOUNT DUE: Rs." + String.format("%.2f", totalDueAmount));
         System.out.println("\nYou can pay the full amount or partial amount.Then you can distribute the amount for outstanding invoices");
@@ -593,7 +589,7 @@ public class InvoiceHandler
     }
 
     private char isFullyPaid() {
-        return InputUtils.collectToggleChoice( 'y', "Amount", "\nWant to pay the full amount (y -> yes, any other key -> no)");
+        return ValidationUtil.collectToggleChoice( 'y', "Amount", "\nWant to pay the full amount (y -> yes, any other key -> no)");
 
     }
 
@@ -620,7 +616,7 @@ public class InvoiceHandler
                 System.out.println("Option 4 -> Exit the Invoice Primary Details Modification Module");
 
                 System.out.println("\nEnter Option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 if (showWarning(invoice, "update")) {
                     return;
@@ -628,11 +624,9 @@ public class InvoiceHandler
 
                 switch (option) {
                     case 1: {
-                        Invoice previousInvoice = new Invoice(invoice.getCustomer(), invoice.getCreatedAt(), invoice.getPaymentTerm(), invoice.getItemTable(), invoice.getSubTotal(), invoice.getDiscount(), invoice.getShippingCharges(), invoice.getTotal(), invoice.getDueAmount(), invoice.getStatus());
+                        Invoice previousInvoice = cloneInvoice(invoice);
 
-                        Map<Item, Integer> previousItemTable = new TreeMap<>((item1, item2) -> Integer.compare(item1.getItemNo(), item2.getItemNo()));
-
-                        previousItemTable.putAll(invoice.getItemTable());
+                        Map<Item, Integer> previousItemTable = previousInvoice.getItemTable();
 
                         Map<Item, Integer> currentItemTable = invoice.getItemTable();
 
@@ -691,7 +685,7 @@ public class InvoiceHandler
                         }
 
                         if (!customerCreated) {
-                            InputUtils.showCustomers(customers);
+                            DisplayUtil.showCustomers(customers);
 
                             cusNo = invoiceUtil.getSerialNumberInput(1, customers.size(), "Customer") - 1;
                         }
@@ -742,7 +736,7 @@ public class InvoiceHandler
                 System.out.println("Option 3 -> Exit the Invoice Other Charges Module");
 
                 System.out.println("\nEnter Option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 if (showWarning(invoice, "update")) {
                     return;
@@ -827,7 +821,7 @@ public class InvoiceHandler
                 System.out.println("Option 4 -> Quit");
 
                 System.out.println("\nEnter the Option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 switch (option) {
 
@@ -849,10 +843,10 @@ public class InvoiceHandler
                         }
 
                         if (!itemCreated) {
-                            itemNo = InputUtils.getItemNumber(items);
+                            itemNo = InputUtil.getItemNumber(items);
                         }
 
-                        int quantity = InputUtils.getValidRange(1, 100, items.get(itemNo).getItemName() + "'s Quantity: ", "Enter the quantity:");
+                        int quantity = ValidationUtil.getValidRange(1, 100, items.get(itemNo).getItemName() + "'s Quantity: ", "Enter the quantity:");
 
                         itemTable.put(items.get(itemNo), itemTable.getOrDefault(items.get(itemNo), 0) + quantity);
 
@@ -904,7 +898,7 @@ public class InvoiceHandler
 
                         Item item = items.get(itemIndex);
 
-                        int isAddItem = InputUtils.getValidRange(1, 2, "Item Table Updation", "Do you want add (or) remove items from the existing list\nTo add Item -> 1\nTo remove Item -> 2");
+                        int isAddItem = ValidationUtil.getValidRange(1, 2, "Item Table Updation", "Do you want add (or) remove items from the existing list\nTo add Item -> 1\nTo remove Item -> 2");
 
                         System.out.println("\nItem Name: " + item.getItemName() + ", Item Quantity: " + itemTable.get(item));
 
@@ -915,7 +909,7 @@ public class InvoiceHandler
                         }
 
                         int quantity = 0;
-                        quantity = InputUtils.handleIntegerInputMisMatches(quantity, 0);
+                        quantity = InputUtil.handleIntegerInputMisMatches(quantity, 0);
 
 
                         if (isAddItem == 1)
@@ -923,7 +917,7 @@ public class InvoiceHandler
                             while (quantity < 0)
                             {
                                 System.out.println("\nEnter the Quantity (Quantity shouldn't be negative):");
-                                quantity = InputUtils.handleIntegerInputMisMatches(quantity, 0);
+                                quantity = InputUtil.handleIntegerInputMisMatches(quantity, 0);
                             }
 
                             itemTable.put(item, itemTable.getOrDefault(item, 0) + quantity);
@@ -941,7 +935,7 @@ public class InvoiceHandler
 
                                 System.out.println("\nEnter the appropriate quantity, that should be less than the actual quantity");
 
-                                quantity = InputUtils.handleIntegerInputMisMatches(quantity, 0);
+                                quantity = InputUtil.handleIntegerInputMisMatches(quantity, 0);
 
                                 if (quantity < 0) {
                                     quantity *= -1;
@@ -1041,13 +1035,14 @@ public class InvoiceHandler
 
                 System.out.println("\nEnter a Valid Item Number from the Cart: ");
 
-                removalItemNo = InputUtils.handleIntegerInputMisMatches(removalItemNo, -1);
+                removalItemNo = InputUtil.handleIntegerInputMisMatches(removalItemNo, -1);
 
                 itemIndex = itemHandler.searchByItemNo(removalItemNo, items);
 
                 if (itemIndex != -1 && itemTable.containsKey(items.get(itemIndex))) {
                     break removalItem;
                 }
+                System.out.println("\nYou entered an item number, that doesn't exist in your cart");
             }
 
         }
@@ -1088,7 +1083,7 @@ public class InvoiceHandler
     private LocalDate parseDateFromInput(String fieldName) {
         final String DATE_REGEX = "\\d{1,2}[-.\\/\\s]+(\\d{1,2}|[a-zA-Z]{3,})[-.\\/\\s]+\\d{4}";
 
-        String date = InputUtils.getValidStringInput(DATE_REGEX, "01-01-2025 (Or) 01/Jan/2025 (Or) 01.January.2025 (Or) 01,January,2025 (Or) 01 January 2025\nNote: If you are mentioning month in String, mention like this Jan", fieldName, "Enter the " + fieldName + " (Eg. 01-01-2025 (Or) 01/Jan/2025 (Or) 01 January 2025):", true);
+        String date = ValidationUtil.getValidStringInput(DATE_REGEX, "01-01-2025 (Or) 01/Jan/2025 (Or) 01.January.2025 (Or) 01,January,2025 (Or) 01 January 2025\nNote: If you are mentioning month in String, mention like this Jan", fieldName, "Enter the " + fieldName + " (Eg. 01-01-2025 (Or) 01/Jan/2025 (Or) 01 January 2025):", true);
 
         String[] dateParts = date.split("[\\s./-]+");
 
@@ -1141,7 +1136,7 @@ public class InvoiceHandler
         {
             System.out.println("\nSince, invoice is closed or partially paid, it's not recommended to " + module + "...");
 
-            char conformationOption = InputUtils.collectToggleChoice(   'y', "Invoice updation option",  "Still you want to " + module + " (y -> yes, any other key -> no)");
+            char conformationOption = ValidationUtil.collectToggleChoice(   'y', "Invoice updation option",  "Still you want to " + module + " (y -> yes, any other key -> no)");
 
             if (conformationOption != 'y')
             {
@@ -1153,4 +1148,43 @@ public class InvoiceHandler
         return false;
     }
 
+    private String showStatuses ()
+    {
+        StringBuilder sb = new StringBuilder("Status\n");
+        for (InvoiceHandler.Status s : InvoiceHandler.Status.values())
+        {
+            sb.append(s.ordinal() + 1).append(" -> ").append(s.name()).append("\n");
+        }
+        return sb.toString().trim();
+    }
+
+    private int getIndexOfInvoiceID (String invoiceId, List<Invoice> invoices)
+    {
+        for (int i = 0; i < invoices.size(); i++)
+        {
+            Invoice invoice = invoices.get(i);
+            if (invoice.getInvoiceId().equalsIgnoreCase(invoiceId))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private Invoice cloneInvoice (Invoice invoice)
+    {
+        Invoice cloneInvoice = new Invoice(invoice.getCustomer(), LocalDate.now(), invoice.getPaymentTerm(), invoice.getItemTable(), invoice.getSubTotal(), invoice.getDiscount(), invoice.getShippingCharges(), invoice.getTotal(), invoice.getDueAmount(), invoice.getStatus());
+
+        cloneInvoice.setInvoiceId(invoice.getInvoiceId());
+        cloneInvoice.setInvNo(invoice.getInvNo());
+
+        Map<Item, Integer> previousItemTable = new TreeMap<>((item1, item2) -> Integer.compare(item1.getItemNo(), item2.getItemNo()));
+
+        previousItemTable.putAll(invoice.getItemTable());
+
+        cloneInvoice.setItemTable(previousItemTable);
+
+        return cloneInvoice;
+    }
+    
 }

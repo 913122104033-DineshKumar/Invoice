@@ -1,7 +1,7 @@
 package invoice.models;
 
 import invoice.handlers.InvoiceHandler;
-import invoice.utils.InputUtils;
+import invoice.utils.DisplayUtil;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -10,8 +10,9 @@ public class Invoice
 {
     private Customer customer;
 
-    private static int totalInvoices = 1;
-    private final int invNo;
+    private static int invoiceCounter = 1;
+    private int invNo;
+    private String invoiceId;
     private final LocalDate createdAt;
     private int paymentTerm;
     private Map<Item, Integer> itemTable;
@@ -29,8 +30,9 @@ public class Invoice
         this.paymentTerm = paymentTerm;
         this.itemTable = itemTable;
         this.subTotal = subTotal;
-        this.invNo = totalInvoices;
-        totalInvoices++;
+        this.invNo = invoiceCounter;
+        this.invoiceId = generateInvId();
+        invoiceCounter++;
     }
 
     public Invoice(Customer customer, LocalDate createdAt, int paymentTerm, Map<Item, Integer> itemTable, double subTotal, double discount, double shippingCharges, double total, double dueAmount, InvoiceHandler.Status status)
@@ -38,8 +40,6 @@ public class Invoice
         this.customer = customer;
         this.createdAt = createdAt;
         this.paymentTerm = paymentTerm;
-        this.invNo = totalInvoices;
-        totalInvoices++;
         this.itemTable = itemTable;
         this.subTotal = subTotal;
         this.discount = discount;
@@ -47,6 +47,9 @@ public class Invoice
         this.total = total;
         this.dueAmount = dueAmount;
         this.status = status;
+        this.invNo = invoiceCounter;
+        this.invoiceId = generateInvId();
+        invoiceCounter++;
     }
 
     public Customer getCustomer()
@@ -119,6 +122,8 @@ public class Invoice
         return this.invNo;
     }
 
+    public void setInvNo (int invNo) { this.invNo = invNo; }
+
     public double getSubTotal() {
         return subTotal;
     }
@@ -135,14 +140,20 @@ public class Invoice
         this.dueAmount = dueAmount;
     }
 
+    public String getInvoiceId() {
+        return invoiceId;
+    }
+
+    public void setInvoiceId (String invoiceId) { this.invoiceId = invoiceId; }
+
     public String generateInvId ()
     {
-        return "INV" + totalInvoices;
+        return String.format("INV%03d", invoiceCounter);
     }
 
     public void showInvoice()
     {
-        InputUtils.printHyphens(145);
+        DisplayUtil.printHyphens(145);
 
         // Print header
         System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s| %15s | %15s |\n",
@@ -157,7 +168,7 @@ public class Invoice
                 "Due Amount",
                 "Status");
 
-        InputUtils.printHyphens(145);
+        DisplayUtil.printHyphens(145);
 
         // Print invoice data
         System.out.printf("| %15s | %15s | %15s | %15s | %15s | %15s | %15s | %15s| %15s | %15s |\n",

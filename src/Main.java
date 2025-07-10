@@ -21,7 +21,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        InputUtils.createScanner();
+        InputUtil.createScanner();
 
         int option = -1;
 
@@ -37,7 +37,7 @@ public class Main {
                 System.out.println("-".repeat(20));
 
                 System.out.println("\nEnter the option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
 
                 switch (option) {
@@ -79,7 +79,7 @@ public class Main {
             }
         }
 
-        InputUtils.destroyScanner();
+        InputUtil.destroyScanner();
     }
 
     private static void itemModule(List<Item> items){
@@ -98,7 +98,7 @@ public class Main {
                 System.out.println("Option 6 -> Exit");
 
                 System.out.println("\nEnter the Option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 switch (option) {
                     case 1: {
@@ -185,7 +185,7 @@ public class Main {
                 System.out.println("Option 6 -> Exit");
 
                 System.out.println("\nEnter the Option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 switch (option) {
                     case 1: {
@@ -238,7 +238,7 @@ public class Main {
                             break;
                         }
 
-                        customerHandler.sortingModule(customers);
+                        customerHandler.sortCustomers(customers);
 
                         break;
                     }
@@ -278,7 +278,7 @@ public class Main {
                 System.out.println("Option 8 -> Exit");
 
                 System.out.println("\nEnter the Option: ");
-                option = InputUtils.handleIntegerInputMisMatches(option, -1);
+                option = InputUtil.handleIntegerInputMisMatches(option, -1);
 
                 switch (option) {
                     case 1: {
@@ -301,7 +301,7 @@ public class Main {
                             break;
                         }
 
-                        int invNo = InputUtils.getInvoiceNumber(invoices);
+                        int invNo = InputUtil.getInvoiceNumber(invoices);
 
                         Invoice updatedInvoice = invoices.get(invNo);
 
@@ -327,7 +327,7 @@ public class Main {
                             break;
                         }
 
-                        InputUtils.showInvoices(invoicesForCustomer);
+                        DisplayUtil.showInvoices(invoicesForCustomer);
                         break;
                     }
 

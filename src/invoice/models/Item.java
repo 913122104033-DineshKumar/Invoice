@@ -1,7 +1,8 @@
 package invoice.models;
 
+import invoice.utils.DisplayUtil;
 import invoice.utils.ItemUtil;
-import invoice.utils.InputUtils;
+import invoice.utils.InputUtil;
 
 import java.time.LocalDate;
 
@@ -24,8 +25,6 @@ public class Item
     private double intraTaxRate;
     private double interTaxRate;
 
-    private static ItemUtil itemUtil;
-
     public Item (char itemType, char itemUnit, LocalDate createdAt, String itemName, double price)
     {
         this.itemType = itemType;
@@ -33,6 +32,7 @@ public class Item
         this.createdAt = createdAt;
         this.itemName = itemName;
         this.price = price;
+        this.itemId = generateItemId();
         this.itemNo = totalItems;
         totalItems++;
     }
@@ -45,12 +45,12 @@ public class Item
         this.itemName = itemName;
         this.price = price;
         this.description = description;
-        this.itemNo = totalItems;
-        totalItems++;
         this.isTaxable = isTaxable;
         this.intraTaxRate = intraTaxRate;
         this.interTaxRate = interTaxRate;
-        Item.itemUtil = new ItemUtil();
+        this.itemId = generateItemId();
+        this.itemNo = totalItems;
+        totalItems++;
     }
 
     public char getItemType() {
@@ -156,7 +156,7 @@ public class Item
 
     public void showItem()
     {
-        InputUtils.printHyphens(147);
+        DisplayUtil.printHyphens(147);
 
         // Print header
         System.out.printf("| %15s | %20s | %15s | %15s | %20s | %20s | %15s | %25s |\n",
@@ -169,7 +169,7 @@ public class Item
                 "Item Price",
                 "Item Description");
 
-        InputUtils.printHyphens(147);
+        DisplayUtil.printHyphens(147);
 
         // Print item data
         System.out.printf("| %15s | %20s | %15s | %15s | %20s | %20s | %15s | %25s |\n",
@@ -182,7 +182,7 @@ public class Item
                 String.format("Rs.%.2f", price),
                 description == null ? "No Description provided" : description);
 
-        InputUtils.printHyphens(147);
+        DisplayUtil.printHyphens(147);
     }
 
 }

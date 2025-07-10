@@ -10,7 +10,7 @@ public class ItemUtil{
 
     public char getItemTypeInput ()
     {
-        return InputUtils.collectToggleChoice( 'g', "Item Type", "Enter the Item Type (g -> goods, any other key -> services)");
+        return ValidationUtil.collectToggleChoice( 'g', "Item Type", "Enter the Item Type (g -> goods, any other key -> services)");
     }
 
     public Character getItemUnitInput ()
@@ -18,9 +18,9 @@ public class ItemUtil{
 
         char itemUnit = '\0';
         do {
-            System.out.println("\nEnter the Valid Item type (P, p -> Pieces, M, m -> meters, B, b -> Box, N, n -> None");
+            System.out.println("\nEnter the Valid Item type (P, p -> Pieces, M, m -> meters, B, b -> Box, N, n -> None)");
 
-            itemUnit = InputUtils.handleCharacterInput( "Item Type");
+            itemUnit = InputUtil.handleCharacterInput( "Item Type");
 
             itemUnit = Character.toLowerCase(itemUnit);
 
@@ -33,23 +33,24 @@ public class ItemUtil{
     {
         final String ITEM_NAME_REGEX = "[a-zA-Z0-9\\s'-]+";
 
-        String itemName = InputUtils.getValidStringInput(ITEM_NAME_REGEX,  "Eg. Punam Saree", "Item Name", "Enter the Item Name: ", true);
+        String itemName = ValidationUtil.getValidStringInput(ITEM_NAME_REGEX,  "Eg. Punam Saree", "Item Name", "Enter the Item Name: ", true);
 
-        List<String> itemNames = new ArrayList<>(); // Alternatively write checkExistsMethod
-
-        for (Item item : items)
+        while (true)
         {
-            itemNames.add(item.getItemName().toLowerCase());
-        }
+            boolean exists = isItemNameExists(itemName, items);
+            boolean invalid = !itemName.matches(ITEM_NAME_REGEX);
 
-        while (itemNames.contains(itemName) || !itemName.matches(ITEM_NAME_REGEX))
-        {
-            if (itemNames.contains(itemName.toLowerCase())) {
-                System.out.println("\nItem name already exists\nEnter the name again");
-            } else {
-                System.out.println(InputUtils.regexMatchFailedError("Item Name", "Eg. Punam Saree"));
+            if (!exists && !invalid)
+            {
+                break;
             }
-            itemName = InputUtils.handleStringInputMisMatches(itemName, "" );
+
+            if (invalid) {
+                System.out.println(ValidationUtil.regexMatchFailedError("Item Name", "Eg. Punam Saree"));
+            } else {
+                System.out.println("\nItem name already exists\nEnter the name again");
+            }
+            itemName = InputUtil.handleStringInputMisMatches(itemName, "" );
         }
 
         return itemName;
@@ -63,7 +64,7 @@ public class ItemUtil{
 
         if (isCreation)
         {
-            conformationOption = InputUtils.collectToggleChoice(
+            conformationOption = ValidationUtil.collectToggleChoice(
                      'y', "Tax Option","Is Taxable applied (y -> yes, any other key -> no)");
         } else
         {
@@ -81,9 +82,9 @@ public class ItemUtil{
         {
             isTaxable = 1;
 
-            intraTaxRate = InputUtils.getValidDoubleInput( 0,   "Intra Tax Rate", "Enter the Intra Tax Rate:");
+            intraTaxRate = ValidationUtil.getValidDoubleInput( 0,   "Intra Tax Rate", "Enter the Intra Tax Rate:");
 
-            interTaxRate = InputUtils.getValidDoubleInput( 0,  "Inter Tax Rate", "Enter the Inter Tax Rate: ");
+            interTaxRate = ValidationUtil.getValidDoubleInput( 0,  "Inter Tax Rate", "Enter the Inter Tax Rate: ");
         } else {
             intraTaxRate = 0;
             interTaxRate = 0;
@@ -95,7 +96,7 @@ public class ItemUtil{
 
     public double getPriceInput ()
     {
-        return InputUtils.getValidDoubleInput( 0,  "Selling Price", "Enter the Item Selling Price:");
+        return ValidationUtil.getValidDoubleInput( 0,  "Selling Price", "Enter the Item Selling Price:");
     }
 
     public String getDescription ()    {
@@ -103,9 +104,21 @@ public class ItemUtil{
 
         String description = "";
 
-        description = InputUtils.getValidStringInput(DESCRIPTION_REGEX,  "Nice Saree", "Item Description", "Enter the Description:", false);
+        description = ValidationUtil.getValidStringInput(DESCRIPTION_REGEX,  "Nice Saree", "Item Description", "Enter the Description:", false);
 
         return description;
+    }
+
+    private boolean isItemNameExists (String itemName, List<Item> items)
+    {
+        for (Item item : items)
+        {
+            if (item.getItemName().equalsIgnoreCase(itemName))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
